@@ -1,0 +1,40 @@
+
+bin
+gen
+#built application files
+*.apk
+*.ap_
+obj
+*.o
+*.d
+proguard
+
+# files for the dex VM
+*.dex
+
+# Java class files
+*.class
+
+*.log
+
+# Local configuration file (sdk path, etc)
+local.properties
+
+# Windows thumbnail db
+Thumbs.db
+
+# OSX files
+.DS_Store
+
+# Eclipse project files
+.classpath
+.project
+
+# Android Studio
+*.iml
+.idea
+#.idea/workspace.xml - remove # and delete .idea if it better suit your needs.
+.gradle
+build/
+demo/.externalNativeBuild
+libkmcagoravrtc/.externalNativeBuild
