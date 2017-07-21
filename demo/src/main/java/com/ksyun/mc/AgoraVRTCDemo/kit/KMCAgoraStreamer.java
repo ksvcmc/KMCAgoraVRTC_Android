@@ -45,9 +45,15 @@ public class KMCAgoraStreamer extends KSYStreamer {
     public static final int SCALING_MODE_CENTER_CROP = ImgTexMixer.SCALING_MODE_CENTER_CROP;
 
     private MusicIntentReceiver mHeadSetReceiver;
-    private boolean mHeadSetPluged = false;
+    private boolean mHeadSetPlugged = false;
     private boolean mIsCalling = false;
-    private boolean mHasSubConnecting = false;
+    private boolean mIsRemoteConnected = false;
+
+    private float mPresetSubLeft;
+    private float mPresetSubTop;
+    private float mPresetSubWidth;
+    private float mPresetSubHeight;
+    private int mPresetSubMode;
 
     public KMCAgoraStreamer(Context context) {
         super(context);
@@ -89,9 +95,35 @@ public class KMCAgoraStreamer extends KSYStreamer {
         mImgTexMixer.setScalingMode(mIdxVideoSub, mode);
     }
 
+
+
+    public RectF getSubScreenRect() {
+        return mImgTexMixer.getRenderRect(mIdxVideoSub);
+    }
+
+    public void switchMainScreen() {
+        if (mRTCMainScreen == RTC_MAIN_SCREEN_REMOTE) {
+            mRTCMainScreen = RTC_MAIN_SCREEN_CAMERA;
+        } else if (mRTCMainScreen == RTC_MAIN_SCREEN_CAMERA) {
+            mRTCMainScreen = RTC_MAIN_SCREEN_REMOTE;
+        }
+
+        setRTCMainScreen(mRTCMainScreen);
+        updateRTCConnect(mRTCMainScreen);
+    }
+
+    public int getRTCMainScreen() {
+        return mRTCMainScreen;
+    }
+
+
+    public boolean isRemoteConnected() {
+        return mIsRemoteConnected;
+    }
+
     @Override
     protected void initModules() {
-        mHeadSetPluged = false;
+        mHeadSetPlugged = false;
         mIsCalling = false;
         super.initModules();
         mAudioCapture.setSampleRate(16000);
@@ -131,9 +163,9 @@ public class KMCAgoraStreamer extends KSYStreamer {
 
                     case KMCAgoraEventListener.FIRST_FRAME_DECODED: {
                         //收到辅播数据后，设置辅播画面为大窗口
-                        setAudioMode(mHeadSetPluged ? AudioManager.MODE_IN_COMMUNICATION :
+                        setAudioMode(mHeadSetPlugged ? AudioManager.MODE_IN_COMMUNICATION :
                                 AudioManager.MODE_NORMAL);
-                        mHasSubConnecting = true;
+                        mIsRemoteConnected = true;
                         updateRTCConnect(mRTCMainScreen);
                         Log.d(TAG, "onFirstRemoteVideoDecoded " + Arrays.toString(data));
                         break;
@@ -141,7 +173,7 @@ public class KMCAgoraStreamer extends KSYStreamer {
 
                     case KMCAgoraEventListener.LEAVE_CHANNEL: {
                         // temporarily only one remote stream supported, so reset uid here
-                        mHasSubConnecting = false;
+                        mIsRemoteConnected = false;
                         mRTCClient.stopReceiveRemoteData();
                         updateRTCConnect(RTC_MAIN_SCREEN_CAMERA);
                         if(!mIsCalling) {
@@ -155,7 +187,7 @@ public class KMCAgoraStreamer extends KSYStreamer {
 
                     case KMCAgoraEventListener.USER_OFFLINE: {
                         //辅播断开后，设置主播画面为大窗口
-                        mHasSubConnecting = false;
+                        mIsRemoteConnected = false;
                         updateRTCConnect(RTC_MAIN_SCREEN_CAMERA);
                         break;
                     }
@@ -176,14 +208,13 @@ public class KMCAgoraStreamer extends KSYStreamer {
         boolean isLastLandscape = (mRotateDegrees % 180) != 0;
         boolean isLandscape = (degrees % 180) != 0;
         if (isLastLandscape != isLandscape) {
-            if(mHasSubConnecting) {
+            if(mIsRemoteConnected) {
                 setRTCSubScreenRect(mPresetSubLeft, mPresetSubTop, mPresetSubHeight,
                         mPresetSubWidth, mPresetSubMode);
             }
         }
         super.setRotateDegrees(degrees);
-        //setRTCMainScreen(mRTCMainScreen);
-        if(mHasSubConnecting) {
+        if(mIsRemoteConnected) {
             updateRTCConnect(mRTCMainScreen);
         }
     }
@@ -268,8 +299,8 @@ public class KMCAgoraStreamer extends KSYStreamer {
      */
     @Override
     public void setEnableAudioPreview(boolean enable) {
-        if (mHasSubConnecting) {
-            setAudioMode(mHeadSetPluged == true ?
+        if (mIsRemoteConnected) {
+            setAudioMode(mHeadSetPlugged == true ?
                     AudioManager.MODE_IN_COMMUNICATION : AudioManager.MODE_NORMAL);
         }
 
@@ -343,9 +374,9 @@ public class KMCAgoraStreamer extends KSYStreamer {
                 }
             }
 
-            mHeadSetPluged = headsetConnected;
-            if(mHasSubConnecting) {
-                setAudioMode(mHeadSetPluged == true ?
+            mHeadSetPlugged = headsetConnected;
+            if(mIsRemoteConnected) {
+                setAudioMode(mHeadSetPlugged == true ?
                         AudioManager.MODE_IN_COMMUNICATION : AudioManager.MODE_NORMAL);
             }
         }
@@ -392,7 +423,7 @@ public class KMCAgoraStreamer extends KSYStreamer {
         } else {
             mImgTexFilterMgt.getSrcPin().connect(mImgTexMixer.getSinkPin(mIdxCamera));
             mImgTexFilterMgt.getSrcPin().connect(mRTCImgTexScaleFilter.getSinkPin());
-            if(mHasSubConnecting) {
+            if(mIsRemoteConnected) {
                 if (needScale) {
                     mRTCRemoteImgTexScaleFilter.setTargetSize(mRTCClient.getImgTexFormat().height,
                             mRTCClient.getImgTexFormat().width);
@@ -421,14 +452,8 @@ public class KMCAgoraStreamer extends KSYStreamer {
         audioManager.setMode(mode);
     }
 
-    private float mPresetSubLeft;
-    private float mPresetSubTop;
-    private float mPresetSubWidth;
-    private float mPresetSubHeight;
-    private int mPresetSubMode;
-
     private void updateRemoteSize(int rtcMainScreen) {
-        if (!mHasSubConnecting) {
+        if (!mIsRemoteConnected) {
             mImgTexMixer.setRenderRect(mIdxCamera, 0.f, 0.f, 1.f, 1.f, 1.0f);
             return;
         }
