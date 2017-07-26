@@ -93,6 +93,10 @@ public class KMCAgoraStreamer extends KSYStreamer {
         mImgTexMixer.setRenderRect(mIdxVideoSub, left, top, width, height, 1.0f);
         mImgTexMixer.setRenderRect(mIdxCamera, 0.f, 0.f, 1.f, 1.f, 1.0f);
         mImgTexMixer.setScalingMode(mIdxVideoSub, mode);
+
+        mImgTexPreviewMixer.setRenderRect(mIdxVideoSub, left, top, width, height, 1.0f);
+        mImgTexPreviewMixer.setRenderRect(mIdxCamera, 0.f, 0.f, 1.f, 1.f, 1.0f);
+        mImgTexPreviewMixer.setScalingMode(mIdxVideoSub, mode);
     }
 
 
@@ -409,6 +413,7 @@ public class KMCAgoraStreamer extends KSYStreamer {
 
         if (rtcMainScreen == RTC_MAIN_SCREEN_REMOTE) {
             mImgTexFilterMgt.getSrcPin().connect(mImgTexMixer.getSinkPin(mIdxVideoSub));
+            mImgTexFilterMgt.getSrcPin().connect(mImgTexPreviewMixer.getSinkPin(mIdxVideoSub));
             mImgTexFilterMgt.getSrcPin().connect(mRTCImgTexScaleFilter.getSinkPin());
 
             if (needScale) {
@@ -416,12 +421,17 @@ public class KMCAgoraStreamer extends KSYStreamer {
                         mRTCClient.getImgTexFormat().width);
                 mRTCClient.getImgTexSrcPin().connect(mRTCRemoteImgTexScaleFilter.getSinkPin());
                 mRTCRemoteImgTexScaleFilter.getSrcPin().connect(mImgTexMixer.getSinkPin(mIdxCamera));
+                mRTCRemoteImgTexScaleFilter.getSrcPin().connect(mImgTexPreviewMixer.getSinkPin(mIdxCamera));
+
             } else {
                 mRTCClient.getImgTexSrcPin().connect(mImgTexMixer.getSinkPin(mIdxCamera));
+                mRTCClient.getImgTexSrcPin().connect(mImgTexPreviewMixer.getSinkPin(mIdxCamera));
             }
             mImgTexMixer.setMainSinkPinIndex(mIdxVideoSub);
+            mImgTexPreviewMixer.setMainSinkPinIndex(mIdxVideoSub);
         } else {
             mImgTexFilterMgt.getSrcPin().connect(mImgTexMixer.getSinkPin(mIdxCamera));
+            mImgTexFilterMgt.getSrcPin().connect(mImgTexPreviewMixer.getSinkPin(mIdxCamera));
             mImgTexFilterMgt.getSrcPin().connect(mRTCImgTexScaleFilter.getSinkPin());
             if(mIsRemoteConnected) {
                 if (needScale) {
@@ -429,11 +439,14 @@ public class KMCAgoraStreamer extends KSYStreamer {
                             mRTCClient.getImgTexFormat().width);
                     mRTCClient.getImgTexSrcPin().connect(mRTCRemoteImgTexScaleFilter.getSinkPin());
                     mRTCRemoteImgTexScaleFilter.getSrcPin().connect(mImgTexMixer.getSinkPin(mIdxVideoSub));
+                    mRTCRemoteImgTexScaleFilter.getSrcPin().connect(mImgTexPreviewMixer.getSinkPin(mIdxVideoSub));
                 } else {
                     mRTCClient.getImgTexSrcPin().connect(mImgTexMixer.getSinkPin(mIdxVideoSub));
+                    mRTCClient.getImgTexSrcPin().connect(mImgTexPreviewMixer.getSinkPin(mIdxVideoSub));
                 }
             }
             mImgTexMixer.setMainSinkPinIndex(mIdxCamera);
+            mImgTexPreviewMixer.setMainSinkPinIndex(mIdxCamera);
         }
 
         updateRemoteSize(rtcMainScreen);
@@ -455,6 +468,7 @@ public class KMCAgoraStreamer extends KSYStreamer {
     private void updateRemoteSize(int rtcMainScreen) {
         if (!mIsRemoteConnected) {
             mImgTexMixer.setRenderRect(mIdxCamera, 0.f, 0.f, 1.f, 1.f, 1.0f);
+            mImgTexPreviewMixer.setRenderRect(mIdxCamera, 0.f, 0.f, 1.f, 1.f, 1.0f);
             return;
         }
 
@@ -497,6 +511,8 @@ public class KMCAgoraStreamer extends KSYStreamer {
 
                 mImgTexMixer.setRenderRect(mIdxCamera, left, top, w_new,
                         h_new, 1.0f);
+                mImgTexPreviewMixer.setRenderRect(mIdxCamera, left, top, w_new,
+                        h_new, 1.0f);
 
             } else if (rtcMainScreen == RTC_MAIN_SCREEN_CAMERA) {
                 RectF rect = getRTCSubScreenRect();
@@ -514,10 +530,15 @@ public class KMCAgoraStreamer extends KSYStreamer {
                 float top = (float) 0.05;
                 mImgTexMixer.setRenderRect(mIdxVideoSub, left, top, w_new,
                         h_new, 1.0f);
+                mImgTexPreviewMixer.setRenderRect(mIdxVideoSub, left, top, w_new,
+                        h_new, 1.0f);
             }
         } else {
             mImgTexMixer.setRenderRect(mIdxCamera, 0.f, 0.f, 1.f, 1.f, 1.0f);
             mImgTexMixer.setRenderRect(mIdxVideoSub, mPresetSubLeft, mPresetSubTop,
+                    mPresetSubWidth, mPresetSubHeight, 1.0f);
+            mImgTexPreviewMixer.setRenderRect(mIdxCamera, 0.f, 0.f, 1.f, 1.f, 1.0f);
+            mImgTexPreviewMixer.setRenderRect(mIdxVideoSub, mPresetSubLeft, mPresetSubTop,
                     mPresetSubWidth, mPresetSubHeight, 1.0f);
         }
     }
