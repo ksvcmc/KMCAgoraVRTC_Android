@@ -246,7 +246,7 @@ public class CameraActivity extends Activity implements
         mRuddySeekBar = (AppCompatSeekBar) findViewById(R.id.ruddy_seek_bar);
 
         mMainHandler = new Handler();
-        String token = "302c01a1de22e28746b247ec85c31990";
+        String token = "7920903db27923b537ce1beedb976cd1";
         mStreamer = new KMCAgoraStreamer(this);
         mRTCText.setEnabled(false);
         mStreamer.authorize(token, new KMCAuthResultListener() {
@@ -621,7 +621,7 @@ public class CameraActivity extends Activity implements
                     .SCALING_MODE_CENTER_CROP);
         }
         mStreamer.setRTCMainScreen(KMCAgoraStreamer.RTC_MAIN_SCREEN_REMOTE);
-        String tempChannel = "ksvc";
+        String tempChannel = "ksy24";
         mStreamer.startRTC(tempChannel);
         mIsCaling = true;
 
