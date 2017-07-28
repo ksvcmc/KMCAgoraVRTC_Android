@@ -5,8 +5,8 @@
 本文档主要针对视频连麦功能而说明
 
 ## 目录结构
-**demo**示例工程  
-**libs**魔方sdk包libkmcagoravrtc.jar，以及声网sdk包
+**demo**: 示例工程  
+**libs**: 魔方sdk包libkmcagoravrtc.jar，以及声网sdk包
 
 此外，由于本sdk只封装了连麦相关的功能，如需要推流的能力，需要集成其他推流SDK。  
 demo中演示了与金山云推流SDK集成的方法，因此工程中添加了对libksylive库:  
