@@ -3,6 +3,8 @@
 ## 项目背景
 金山魔方是一个多媒体能力提供平台，通过统一接入API、统一鉴权、统一计费等多种手段，降低客户接入多媒体处理能力的代价，提供多媒体能力供应商的效率。  
 本文档主要针对视频连麦功能而说明
+## 效果展示
+![Alt text](https://raw.githubusercontent.com/wiki/ksvcmc/KMCAgoraVRTC_Android/lianmai.jpg)
 
 ## 目录结构
 **demo**: 示例工程  
@@ -131,7 +133,8 @@ demo工程给出了魔方视频连麦 + 金山云推流的示例， 封装了KMC
 6.参照文档和DEMO填写TOKEN，就可以Run通项目了。  
 7.试用中或试用结束后，有意愿购买该服务可以与我们的商务人员联系购买。  
 （商务Email:KSC-VBU-KMC@kingsoft.com）
-
+## Demo下载
+![Alt text](https://raw.githubusercontent.com/wiki/ksvcmc/KMCAgoraVRTC_Android/lianmaicode.png)
 ## 反馈与建议
 主页：https://docs.ksyun.com/read/latest/142/_book/index.html  
 邮箱：ksc-vbu-kmc-dev@kingsoft.com  
