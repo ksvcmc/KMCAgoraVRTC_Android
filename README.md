@@ -8,7 +8,9 @@
 
 ## 目录结构
 **demo**: 示例工程  
-**libs**: 魔方sdk包libkmcagoravrtc.jar，以及声网sdk包
+**libs**: 魔方sdk包libkmcagoravrtc.jar，以及声网sdk包  
+
+**注: demo工程使用软链接引用libs目录，对于windows平台做Android开发的用户，需要手动将libs目录拷贝到demo目录下。**
 
 此外，由于本sdk只封装了连麦相关的功能，如需要推流的能力，需要集成其他推流SDK。  
 demo中演示了与金山云推流SDK集成的方法，因此工程中添加了对libksylive库:  
