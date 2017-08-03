@@ -16,6 +16,9 @@ compile 'com.ksyun.media:libksylive-java:2.3.0'
 compile 'com.ksyun.media:libksylive-arm64:2.3.0'  
 compile 'com.ksyun.media:libksylive-armv7a:2.3.0'  
 compile 'com.ksyun.media:libksylive-x86:2.3.0'  
+## 鉴权
+SDK在使用时需要用token进行鉴权后方可使用，token申请方式见**接入步骤**部分;  
+token与应用包名为一一对应的关系;
 
 ## SDK使用指南
 
