@@ -5,19 +5,45 @@
 本文档主要针对视频连麦功能而说明
 ## 效果展示
 ![Alt text](https://raw.githubusercontent.com/wiki/ksvcmc/KMCAgoraVRTC_Android/lianmai.jpg)
-
+   
 ## 目录结构
 **demo**: 示例工程  
-**libs**: 魔方sdk包libkmcagoravrtc.jar，以及声网sdk包  
+**libs**: 魔方sdk包libkmcagoravrtc.jar，以及声网sdk包  
 
 **注: demo工程使用软链接引用libs目录，对于windows平台做Android开发的用户，需要手动将libs目录拷贝到demo目录下。**
 
 此外，由于本sdk只封装了连麦相关的功能，如需要推流的能力，需要集成其他推流SDK。  
-demo中演示了与金山云推流SDK集成的方法，因此工程中添加了对libksylive库:  
-compile 'com.ksyun.media:libksylive-java:2.3.0'  
-compile 'com.ksyun.media:libksylive-arm64:2.3.0'  
-compile 'com.ksyun.media:libksylive-armv7a:2.3.0'  
-compile 'com.ksyun.media:libksylive-x86:2.3.0'  
+demo中演示了与金山云推流SDK集成的方法，因此工程中添加了对libksylive库.
+
+## 导入SDK
+引入目标库, 将libs目录下的库文件引入到目标工程中并添加依赖。
+
+可参考下述配置方式（以Android Studio为例）：
+ +  推荐直接使用gradle方式集成：
+  
+    ```
+       allprojects {
+         repositories {
+             jcenter()
+       }
+       
+       dependencies {
+        compile 'com.ksyun.mc:KMCAgoraVRTC:1.0.0'
+       }
+    ```
+
+ +  手动下载集成
+   将libs目录copy到目标工程的根目录下；
+   修改目标工程的build.gradle文件，配置jniLibs路径：
+   
+    ```
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['libs']
+        }
+    }
+    ```
+
 ## 鉴权
 SDK在使用时需要用token进行鉴权后方可使用，token申请方式见**接入步骤**部分;  
 token与应用包名为一一对应的关系;
