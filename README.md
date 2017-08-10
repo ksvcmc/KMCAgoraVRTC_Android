@@ -28,7 +28,7 @@ demo中演示了与金山云推流SDK集成的方法，因此工程中添加了�
        }
        
        dependencies {
-        compile 'com.ksyun.mc:KMCAgoraVRTC:1.0.0'
+        compile 'com.ksyun.mc:KMCAgoraVRTC:1.0.1'
        }
     ```
 
