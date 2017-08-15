@@ -138,6 +138,16 @@ void setVideoProfile(int profile, boolean swap)
 void registerEventListener(KMCAgoraEventListener listener)
 ```
 
+获取MediaManager对象
+
+```java
+/**
+  * 获取MediaManger对象
+  * 通过MediaManager对象的getRtcEngine()方法可以获取当前RtcEngine
+  */
+MediaManager getMediaManager()
+```
+
 本sdk只封装了连麦相关的功能，可结合金山云推流sdk使用，完成音视频的合成、推流等操作。  
 demo工程给出了魔方视频连麦 + 金山云推流的示例， 封装了KMCAgoraStreamer类和KMCAgoraVRTCClient类，具体可参考demo代码。
 
