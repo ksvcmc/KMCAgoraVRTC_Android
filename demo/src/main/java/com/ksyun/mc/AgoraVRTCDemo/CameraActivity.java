@@ -315,7 +315,7 @@ public class CameraActivity extends Activity implements
                 mIsLandscape = (rotation % 180) != 0;
                 mStreamer.setRotateDegrees(rotation);
                 mLastRotation = rotation;
-                mOrientationEventListener = new OrientationEventListener(this,
+                mOrientationEventListener = new OrientationEventListener(this.getApplicationContext(),
                         SensorManager.SENSOR_DELAY_NORMAL) {
                     @Override
                     public void onOrientationChanged(int orientation) {
@@ -391,7 +391,6 @@ public class CameraActivity extends Activity implements
         //for rtc sub screen
         cameraTouchHelper.addTouchListener(mSubScreenTouchListener);
 
-        startCameraPreviewWithPermCheck();
         if (mWaterMarkCheckBox.isChecked()) {
             showWaterMark();
         }
@@ -533,6 +532,8 @@ public class CameraActivity extends Activity implements
         mStreamer.setDisplayPreview(mCameraPreviewView);
         mStreamer.onResume();
         mCameraHintView.hideAll();
+
+        startCameraPreviewWithPermCheck();
     }
 
     @Override

@@ -52,12 +52,15 @@ public class KMCAgoraVRTCClient implements KMCAgoraVRTCCallback {
 
     public void authorize(String token, KMCAuthResultListener listener) {
         if (mRTCWrapper != null) {
-            mRTCWrapper.authorize(token, listener);
+            mRTCWrapper.authorize(token,true, listener);
         }
     }
 
     public void release() {
-
+        if (mRTCWrapper != null) {
+            mRTCWrapper.release();
+        }
+        mRTCWrapper = null;
     }
 
     public SinkPin<ImgBufFrame> getVideoSinkPin() {
