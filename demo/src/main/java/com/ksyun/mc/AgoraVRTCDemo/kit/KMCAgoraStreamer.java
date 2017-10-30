@@ -56,7 +56,7 @@ public class KMCAgoraStreamer extends KSYStreamer {
     private int mPresetSubMode;
 
     public KMCAgoraStreamer(Context context) {
-        super(context);
+        super(context.getApplicationContext());
     }
 
 
@@ -276,6 +276,12 @@ public class KMCAgoraStreamer extends KSYStreamer {
         mRTCClient.getLocalAudioSrcPin().connect(mAudioFilterMgt.getSinkPin());
         mRTCClient.getRemoteAudioSrcPin().connect(mAudioMixer.getSinkPin(mIdxAudioRemote));
     }
+    @Override
+    protected void startAudioCapture() {
+        if(!mIsCalling) { //在开启连麦时，不允许在启动推流中的音频
+            super.startAudioCapture();
+        }
+    }
 
     public void stopRTC() {
         if (!mIsCalling) {
@@ -317,6 +323,11 @@ public class KMCAgoraStreamer extends KSYStreamer {
     @Override
     public void release() {
         super.release();
+        getImgTexFilterMgt().release();
+        setOnErrorListener(null);
+        setOnInfoListener(null);
+        setOnLogEventListener(null);
+
         mRTCClient.release();
         unregisterHeadsetPlugReceiver();
     }

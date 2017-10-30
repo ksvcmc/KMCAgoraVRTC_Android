@@ -23,6 +23,7 @@
     <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
+        android:name=".ExampleApplication"
         tools:replace="android:allowBackup"
         android:allowBackup="false"
         android:alwaysRetainTaskState="true"
