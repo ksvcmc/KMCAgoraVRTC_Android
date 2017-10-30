@@ -12,12 +12,21 @@ android {
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
+    signingConfigs {
+        config {
+            keyAlias 'ksystreamer'
+            keyPassword 'kscloud'
+            storeFile file('../ksystreamer.jks')
+            storePassword 'kscloud'
+        }
+    }
     buildTypes {
         debug {
             jniDebuggable true
         }
         release {
             minifyEnabled true
+            signingConfig signingConfigs.config
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
         }
     }
