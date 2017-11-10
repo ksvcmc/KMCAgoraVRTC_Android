@@ -293,6 +293,7 @@ public class CameraActivity extends Activity implements
             }
 
             int videoResolution = bundle.getInt(VIDEO_RESOLUTION, 0);
+            mStreamer.setCameraCaptureResolution(videoResolution);
             mStreamer.setPreviewResolution(videoResolution);
             mStreamer.setTargetResolution(videoResolution);
 
