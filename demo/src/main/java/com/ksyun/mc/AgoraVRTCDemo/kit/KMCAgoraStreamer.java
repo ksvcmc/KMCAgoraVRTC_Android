@@ -7,16 +7,19 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.RectF;
 import android.media.AudioManager;
+import android.os.Build;
 import android.util.Log;
 
 import com.ksyun.mc.agoravrtc.AgoraErrorCode;
 import com.ksyun.mc.agoravrtc.AgoraVideoProfile;
 import com.ksyun.mc.agoravrtc.KMCAgoraEventListener;
 import com.ksyun.mc.agoravrtc.KMCAuthResultListener;
-import com.ksyun.media.streamer.encoder.ImgTexToBuf;
+import com.ksyun.media.streamer.filter.imgbuf.ImgBufScaleFilter;
 import com.ksyun.media.streamer.filter.imgtex.ImgTexMixer;
 import com.ksyun.media.streamer.filter.imgtex.ImgTexScaleFilter;
+import com.ksyun.media.streamer.framework.ImgBufFormat;
 import com.ksyun.media.streamer.kit.KSYStreamer;
+import com.ksyun.media.streamer.util.gles.GLRender;
 
 import java.util.Arrays;
 
@@ -32,9 +35,9 @@ public class KMCAgoraStreamer extends KSYStreamer {
     private static final int mIdxAudioRemote = 2;
 
     private KMCAgoraVRTCClient mRTCClient;
-    private ImgTexToBuf mRTCImgTexToBuf;
-    private ImgTexScaleFilter mRTCImgTexScaleFilter;
     private ImgTexScaleFilter mRTCRemoteImgTexScaleFilter;
+    private ImgTexScaleFilter mRTCImgTexScaleFilter;
+    private ImgBufScaleFilter mImgBufScale;
 
     public static final int RTC_MAIN_SCREEN_CAMERA = 1;
     public static final int RTC_MAIN_SCREEN_REMOTE = 2;
@@ -54,6 +57,8 @@ public class KMCAgoraStreamer extends KSYStreamer {
     private float mPresetSubWidth;
     private float mPresetSubHeight;
     private int mPresetSubMode;
+
+    private boolean mMuteAudio;
 
     public KMCAgoraStreamer(Context context) {
         super(context.getApplicationContext());
@@ -134,17 +139,19 @@ public class KMCAgoraStreamer extends KSYStreamer {
         //rtc remote image
         mRTCClient = new KMCAgoraVRTCClient(mGLRender, mContext);
 
-        mRTCImgTexToBuf = new ImgTexToBuf(mGLRender);
-        mRTCImgTexScaleFilter = new ImgTexScaleFilter(mGLRender);
-        mImgTexFilterMgt.getSrcPin().connect(mRTCImgTexScaleFilter.getSinkPin());
-        mRTCImgTexScaleFilter.getSrcPin().connect(mRTCImgTexToBuf.mSinkPin);
-
         mRTCRemoteImgTexScaleFilter = new ImgTexScaleFilter(mGLRender);
         mRTCRemoteImgTexScaleFilter.setReuseFbo(false);
 
-        //send local video to rtc module sink pin
-        mRTCImgTexToBuf.mSrcPin.connect(mRTCClient.getVideoSinkPin());
-        mRTCImgTexToBuf.start();
+        mRTCImgTexScaleFilter = new ImgTexScaleFilter(mGLRender);
+        mImgTexFilterMgt.getSrcPin().connect(mRTCImgTexScaleFilter.getSinkPin());
+        mRTCImgTexScaleFilter.getSrcPin().connect(mRTCClient.getImgTexSinkPin());
+
+        mImgBufScale = new ImgBufScaleFilter();
+        mImgBufScale.setOutputFormat(ImgBufFormat.FMT_I420);
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
+            mCameraCapture.mImgBufSrcPin.connect(mImgBufScale.getSinkPin());
+            mImgBufScale.getSrcPin().connect(mRTCClient.getVideoSinkPin());
+        }
 
         setRTCSubScreenRect(0.65f, 0.f, 0.35f, 0.3f, SCALING_MODE_CENTER_CROP);
 
@@ -155,23 +162,23 @@ public class KMCAgoraStreamer extends KSYStreamer {
             public void onEvent(int event, Object... data) {
                 switch (event) {
                     case KMCAgoraEventListener.USER_JOINED: {
+                        int uid = (int) data[0];
+                        Log.i("KMCStreamer","USER_JOINED uid: " + uid);
                         mRTCClient.startReceiveRemoteData();
                         break;
                     }
 
                     case KMCAgoraEventListener.JOIN_CHANNEL_RESULT: {
-                        boolean success = (Boolean) data[0];
                         mRTCClient.startReceiveRemoteData();
                         break;
                     }
 
                     case KMCAgoraEventListener.FIRST_FRAME_DECODED: {
-                        //收到辅播数据后，设置辅播画面为大窗口
                         setAudioMode(mHeadSetPlugged ? AudioManager.MODE_IN_COMMUNICATION :
                                 AudioManager.MODE_NORMAL);
                         mIsRemoteConnected = true;
-                        updateRTCConnect(mRTCMainScreen);
                         Log.d(TAG, "onFirstRemoteVideoDecoded " + Arrays.toString(data));
+                        updateRTCConnect(mRTCMainScreen);
                         break;
                     }
 
@@ -190,7 +197,6 @@ public class KMCAgoraStreamer extends KSYStreamer {
                     }
 
                     case KMCAgoraEventListener.USER_OFFLINE: {
-                        //辅播断开后，设置主播画面为大窗口
                         mIsRemoteConnected = false;
                         updateRTCConnect(RTC_MAIN_SCREEN_CAMERA);
                         break;
@@ -224,20 +230,54 @@ public class KMCAgoraStreamer extends KSYStreamer {
     }
 
     @Override
+    public void setMuteAudio(boolean isMute) {
+        super.setMuteAudio(isMute);
+        //对所有远端用户进行静音与否
+//        mRTCClient.getRTCWrapper().muteAllRemoteAudioStreams(isMute);
+        //允许/禁止往网络发送本地音频流
+        mRTCClient.getRTCWrapper().muteLocalAudioStream(isMute);
+
+        mMuteAudio = isMute;
+    }
+
+    @Override
+    public void setFrontCameraMirror(boolean mirror) {
+        super.setFrontCameraMirror(mirror);
+        if (mImgBufScale != null) {
+            mImgBufScale.setMirror(mirror);
+        }
+    }
+
+    @Override
     protected void setPreviewParams() {
         super.setPreviewParams();
         //转换成agora支持的编码分辨率
         switch (mTargetWidth) {
             case 360:
-                mRTCImgTexScaleFilter.setTargetSize(360, 640);
+                if (mRTCImgTexScaleFilter != null) {
+                    mRTCImgTexScaleFilter.setTargetSize(360, 640);
+                }
+                if (mImgBufScale != null) {
+                    mImgBufScale.setTargetSize(360, 640);
+                }
                 mRTCClient.setVideoProfile(AgoraVideoProfile.VIDEO_PROFILE_360P, true);
                 break;
             case 480:
-                mRTCImgTexScaleFilter.setTargetSize(480, 848);
+                if (mRTCImgTexScaleFilter != null) {
+                    mRTCImgTexScaleFilter.setTargetSize(480, 848);
+                }
+                if (mImgBufScale != null) {
+                    mImgBufScale.setTargetSize(480, 848);
+                }
                 mRTCClient.setVideoProfile(AgoraVideoProfile.VIDEO_PROFILE_480P_8, true);
                 break;
             case 720:
-                mRTCImgTexScaleFilter.setTargetSize(720, 1280);
+                if (mRTCImgTexScaleFilter != null) {
+                    mRTCImgTexScaleFilter.setTargetSize(720, 1280);
+                }
+                if (mImgBufScale != null) {
+                    mImgBufScale.setTargetSize(720, 1280);
+                }
                 mRTCClient.setVideoProfile(AgoraVideoProfile.VIDEO_PROFILE_720P, true);
                 break;
             default:
@@ -245,10 +285,20 @@ public class KMCAgoraStreamer extends KSYStreamer {
                 // https://docs.agora.io/cn/user_guide/API/android_api_live.html
                 boolean isLandscape = (mRotateDegrees % 180) != 0;
                 if(isLandscape) {
-                    mRTCImgTexScaleFilter.setTargetSize(640, 360);
+                    if (mRTCImgTexScaleFilter != null) {
+                        mRTCImgTexScaleFilter.setTargetSize(640, 360);
+                    }
+                    if (mImgBufScale != null) {
+                        mImgBufScale.setTargetSize(640, 360);
+                    }
                     mRTCClient.setVideoProfile(AgoraVideoProfile.VIDEO_PROFILE_360P, false);
                 } else {
-                    mRTCImgTexScaleFilter.setTargetSize(360, 640);
+                    if (mRTCImgTexScaleFilter != null) {
+                        mRTCImgTexScaleFilter.setTargetSize(360, 640);
+                    }
+                    if (mImgBufScale != null) {
+                        mImgBufScale.setTargetSize(360, 640);
+                    }
                     mRTCClient.setVideoProfile(AgoraVideoProfile.VIDEO_PROFILE_360P, true);
                 }
 
@@ -275,6 +325,11 @@ public class KMCAgoraStreamer extends KSYStreamer {
         //connect rtc audio
         mRTCClient.getLocalAudioSrcPin().connect(mAudioFilterMgt.getSinkPin());
         mRTCClient.getRemoteAudioSrcPin().connect(mAudioMixer.getSinkPin(mIdxAudioRemote));
+
+        //对所有远端用户进行静音与否
+//        mRTCClient.getRTCWrapper().muteAllRemoteAudioStreams(mMuteAudio);
+        //允许/禁止往网络发送本地音频流
+        mRTCClient.getRTCWrapper().muteLocalAudioStream(mMuteAudio);
     }
     @Override
     protected void startAudioCapture() {
@@ -328,6 +383,10 @@ public class KMCAgoraStreamer extends KSYStreamer {
         setOnInfoListener(null);
         setOnLogEventListener(null);
 
+        if (mImgBufScale != null) {
+            mImgBufScale.release();
+            mImgBufScale = null;
+        }
         mRTCClient.release();
         unregisterHeadsetPlugReceiver();
     }
@@ -422,10 +481,11 @@ public class KMCAgoraStreamer extends KSYStreamer {
             }
         }
 
+        mImgTexFilterMgt.getSrcPin().connect(mRTCImgTexScaleFilter.getSinkPin());
+
         if (rtcMainScreen == RTC_MAIN_SCREEN_REMOTE) {
             mImgTexFilterMgt.getSrcPin().connect(mImgTexMixer.getSinkPin(mIdxVideoSub));
             mImgTexFilterMgt.getSrcPin().connect(mImgTexPreviewMixer.getSinkPin(mIdxVideoSub));
-            mImgTexFilterMgt.getSrcPin().connect(mRTCImgTexScaleFilter.getSinkPin());
 
             if (needScale) {
                 mRTCRemoteImgTexScaleFilter.setTargetSize(mRTCClient.getImgTexFormat().height,
@@ -443,7 +503,7 @@ public class KMCAgoraStreamer extends KSYStreamer {
         } else {
             mImgTexFilterMgt.getSrcPin().connect(mImgTexMixer.getSinkPin(mIdxCamera));
             mImgTexFilterMgt.getSrcPin().connect(mImgTexPreviewMixer.getSinkPin(mIdxCamera));
-            mImgTexFilterMgt.getSrcPin().connect(mRTCImgTexScaleFilter.getSinkPin());
+
             if(mIsRemoteConnected) {
                 if (needScale) {
                     mRTCRemoteImgTexScaleFilter.setTargetSize(mRTCClient.getImgTexFormat().height,
