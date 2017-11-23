@@ -39,3 +39,4 @@ build/
 demo/.externalNativeBuild
 libkmcagoravrtc/.externalNativeBuild
 *.hprof
+libkmcagoravrtc/src/main/libs
