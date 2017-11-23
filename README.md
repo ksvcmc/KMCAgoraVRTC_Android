@@ -53,7 +53,12 @@ token与应用包名为一一对应的关系;
 
 本sdk使用简单，初次使用需要在魔方服务后台申请token，用于客户鉴权，使用下面的接口鉴权
 ```java
-void authorize(String token, KMCAuthResultListener listener)
+/**
+  * @token 
+  * @enableVideo 是否使用视频，false表示不使用视频，纯音频连麦
+  * @listener 鉴权结果回调
+  */
+void authorize(String token, final boolean enableVideo, KMCAuthResultListener listener)
 ```
 
 加入一个频道
