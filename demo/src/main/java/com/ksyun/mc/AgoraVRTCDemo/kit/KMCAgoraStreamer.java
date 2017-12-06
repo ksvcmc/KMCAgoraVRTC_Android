@@ -19,7 +19,6 @@ import com.ksyun.media.streamer.filter.imgtex.ImgTexMixer;
 import com.ksyun.media.streamer.filter.imgtex.ImgTexScaleFilter;
 import com.ksyun.media.streamer.framework.ImgBufFormat;
 import com.ksyun.media.streamer.kit.KSYStreamer;
-import com.ksyun.media.streamer.util.gles.GLRender;
 
 import java.util.Arrays;
 
@@ -52,11 +51,17 @@ public class KMCAgoraStreamer extends KSYStreamer {
     private boolean mIsCalling = false;
     private boolean mIsRemoteConnected = false;
 
-    private float mPresetSubLeft;
-    private float mPresetSubTop;
-    private float mPresetSubWidth;
-    private float mPresetSubHeight;
-    private int mPresetSubMode;
+    private float mPresetSubLeft = 0.65f;
+    private float mPresetSubTop = 0.f;
+    private float mPresetSubWidth = 0.35f;
+    private float mPresetSubHeight = 0.35f;
+    private int mPresetSubMode = SCALING_MODE_CENTER_CROP;
+
+    private float mPresetMainLeft = 0.f;
+    private float mPresetMainTop = 0.f;
+    private float mPresetMainWidth = 1.f;
+    private float mPresetMainHeight = 1.f;
+    private int mPresetMainMode = SCALING_MODE_CENTER_CROP;
 
     private boolean mMuteAudio;
 
@@ -96,18 +101,44 @@ public class KMCAgoraStreamer extends KSYStreamer {
         mPresetSubMode = mode;
 
         mImgTexMixer.setRenderRect(mIdxVideoSub, left, top, width, height, 1.0f);
-        mImgTexMixer.setRenderRect(mIdxCamera, 0.f, 0.f, 1.f, 1.f, 1.0f);
         mImgTexMixer.setScalingMode(mIdxVideoSub, mode);
 
         mImgTexPreviewMixer.setRenderRect(mIdxVideoSub, left, top, width, height, 1.0f);
-        mImgTexPreviewMixer.setRenderRect(mIdxCamera, 0.f, 0.f, 1.f, 1.f, 1.0f);
         mImgTexPreviewMixer.setScalingMode(mIdxVideoSub, mode);
+    }
+
+    /**
+     * set camera screen rect when rtc connected
+     * @param left 0~1 default value 0.f
+     * @param top 0~1 default value 0.f
+     * @param width 0~1 default value 1.f
+     * @param height 0~1 default value 1.f
+     * @param mode scaling mode
+     */
+    public void setRTCMainScreenRect(float left, float top, float width, float height, int mode) {
+        mPresetMainLeft = left;
+        mPresetMainTop = top;
+        mPresetMainWidth = width;
+        mPresetMainHeight = height;
+        mPresetMainMode = mode;
+
+        if (isRemoteConnected()) {
+            mImgTexMixer.setRenderRect(mIdxCamera, left, top, width, height, 1.0f);
+            mImgTexPreviewMixer.setRenderRect(mIdxCamera, left, top, width, height, 1.0f);
+
+            mImgTexMixer.setScalingMode(mIdxCamera, mode);
+            mImgTexPreviewMixer.setScalingMode(mIdxCamera, mode);
+        }
     }
 
 
 
     public RectF getSubScreenRect() {
         return mImgTexMixer.getRenderRect(mIdxVideoSub);
+    }
+
+    public RectF getMainScreenRect() {
+        return mImgTexMixer.getRenderRect(mIdxCamera);
     }
 
     public void switchMainScreen() {
@@ -152,8 +183,6 @@ public class KMCAgoraStreamer extends KSYStreamer {
             mCameraCapture.mImgBufSrcPin.connect(mImgBufScale.getSinkPin());
             mImgBufScale.getSrcPin().connect(mRTCClient.getVideoSinkPin());
         }
-
-        setRTCSubScreenRect(0.65f, 0.f, 0.35f, 0.3f, SCALING_MODE_CENTER_CROP);
 
         registerHeadsetPlugReceiver();
 
@@ -538,8 +567,8 @@ public class KMCAgoraStreamer extends KSYStreamer {
 
     private void updateRemoteSize(int rtcMainScreen) {
         if (!mIsRemoteConnected) {
-            mImgTexMixer.setRenderRect(mIdxCamera, 0.f, 0.f, 1.f, 1.f, 1.0f);
-            mImgTexPreviewMixer.setRenderRect(mIdxCamera, 0.f, 0.f, 1.f, 1.f, 1.0f);
+            mImgTexMixer.setRenderRect(mIdxCamera, 0.f, 0.f, 1.0f, 1.0f, 1.0f);
+            mImgTexPreviewMixer.setRenderRect(mIdxCamera, 0.f, 0.f, 1.0f, 1.0f, 1.0f);
             return;
         }
 
@@ -605,10 +634,12 @@ public class KMCAgoraStreamer extends KSYStreamer {
                         h_new, 1.0f);
             }
         } else {
-            mImgTexMixer.setRenderRect(mIdxCamera, 0.f, 0.f, 1.f, 1.f, 1.0f);
+            mImgTexMixer.setRenderRect(mIdxCamera, mPresetMainLeft, mPresetMainTop,
+                    mPresetMainWidth, mPresetMainHeight, 1.0f);
             mImgTexMixer.setRenderRect(mIdxVideoSub, mPresetSubLeft, mPresetSubTop,
                     mPresetSubWidth, mPresetSubHeight, 1.0f);
-            mImgTexPreviewMixer.setRenderRect(mIdxCamera, 0.f, 0.f, 1.f, 1.f, 1.0f);
+            mImgTexPreviewMixer.setRenderRect(mIdxCamera, mPresetMainLeft, mPresetMainTop,
+                    mPresetMainWidth, mPresetMainHeight, 1.0f);
             mImgTexPreviewMixer.setRenderRect(mIdxVideoSub, mPresetSubLeft, mPresetSubTop,
                     mPresetSubWidth, mPresetSubHeight, 1.0f);
         }

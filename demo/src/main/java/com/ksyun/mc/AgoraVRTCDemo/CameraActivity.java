@@ -615,14 +615,24 @@ public class CameraActivity extends Activity implements
     }
 
     private void startRTC() {
-        if (mIsLandscape) {
-            mStreamer.setRTCSubScreenRect(0.65f, 0.f, 0.3f, 0.35f, KMCAgoraStreamer
-                    .SCALING_MODE_CENTER_CROP);
-        } else {
-            mStreamer.setRTCSubScreenRect(0.65f, 0.f, 0.35f, 0.3f, KMCAgoraStreamer
-                    .SCALING_MODE_CENTER_CROP);
-        }
-        mStreamer.setRTCMainScreen(KMCAgoraStreamer.RTC_MAIN_SCREEN_REMOTE);
+        //设置连麦时小窗口位置尺寸
+        mStreamer.setRTCSubScreenRect(0.6f, 0.05f, 0.35f, 0.35f, KMCAgoraStreamer
+                .SCALING_MODE_CENTER_CROP);
+        //设置连麦时本地camera窗口位置尺寸
+        mStreamer.setRTCMainScreenRect(0.f, 0.f, 1.0f, 1.0f,
+                KMCAgoraStreamer.SCALING_MODE_CENTER_CROP);
+        //设置主窗口为camera窗口
+        mStreamer.setRTCMainScreen(KMCAgoraStreamer.RTC_MAIN_SCREEN_CAMERA);
+
+//          //设置连麦时小窗口位置尺寸
+//           mStreamer.setRTCSubScreenRect(0.5f, 0.f, 0.5f, 0.5f, KMCAgoraStreamer
+//          .SCALING_MODE_CENTER_CROP);
+//          //设置连麦时本地camera窗口位置尺寸
+//          mStreamer.setRTCMainScreenRect(0.f, 0.f, 0.5f, 0.5f,
+//          KMCAgoraStreamer.SCALING_MODE_CENTER_CROP);
+//          //设置主窗口为camera窗口
+//          mStreamer.setRTCMainScreen(KMCAgoraStreamer.RTC_MAIN_SCREEN_CAMERA);
+
         String tempChannel = "ksy24";
         mStreamer.startRTC(tempChannel);
         mIsCaling = true;
