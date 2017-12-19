@@ -25,6 +25,12 @@ public class DemoActivity extends Activity
     private EditText mFrameRateEditText;
     private EditText mVideoBitRateEditText;
     private EditText mAudioBitRateEditText;
+
+    public static final int RTC_DEFAULT_MODE = 0;
+    public static final int RTC_PK_MODE = 1;
+    private RadioButton mDefaultMode;
+    private RadioButton mPKMode;
+
     private RadioButton mRes360Button;
     private RadioButton mRes480Button;
     private RadioButton mRes540Button;
@@ -69,6 +75,10 @@ public class DemoActivity extends Activity
         mVideoBitRateEditText.setInputType(InputType.TYPE_CLASS_NUMBER);
         mAudioBitRateEditText = (EditText) findViewById(R.id.audioBitratePicker);
         mAudioBitRateEditText.setInputType(InputType.TYPE_CLASS_NUMBER);
+
+        mDefaultMode = (RadioButton) findViewById(R.id.default_mode);
+        mPKMode = (RadioButton) findViewById(R.id.pk_mode);
+
         mRes360Button = (RadioButton) findViewById(R.id.radiobutton1);
         mRes480Button = (RadioButton) findViewById(R.id.radiobutton2);
         mRes540Button = (RadioButton) findViewById(R.id.radiobutton3);
@@ -133,6 +143,7 @@ public class DemoActivity extends Activity
                 int orientation;
                 boolean startAuto;
                 boolean showDebugInfo;
+                int rtcMode = 0;
 
                 if (!TextUtils.isEmpty(mUrlEditText.getText())
                         && mUrlEditText.getText().toString().startsWith("rtmp")) {
@@ -149,6 +160,12 @@ public class DemoActivity extends Activity
                     if (!TextUtils.isEmpty(mAudioBitRateEditText.getText().toString())) {
                         audioBitRate = Integer.parseInt(mAudioBitRateEditText.getText()
                                 .toString());
+                    }
+
+                    if (mDefaultMode.isChecked()) {
+                        rtcMode = RTC_DEFAULT_MODE;
+                    } else if (mPKMode.isChecked()) {
+                        rtcMode = RTC_PK_MODE;
                     }
 
                     if (mRes360Button.isChecked()) {
@@ -207,7 +224,7 @@ public class DemoActivity extends Activity
                     CameraActivity.startActivity(getApplicationContext(), 0,
                             mUrlEditText.getText().toString(), frameRate, videoBitRate,
                             audioBitRate, videoResolution, orientation, encodeType, encodeMethod,
-                            encodeScene, encodeProfile, startAuto, showDebugInfo);
+                            encodeScene, encodeProfile, startAuto, showDebugInfo, rtcMode);
                 }
                 break;
             default:

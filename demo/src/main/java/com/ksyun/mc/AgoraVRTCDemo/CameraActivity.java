@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.RectF;
 import android.hardware.Camera;
@@ -149,6 +150,7 @@ public class CameraActivity extends Activity implements
     public final static String VIDEO_BITRATE = "video_bitrate";
     public final static String AUDIO_BITRATE = "audio_bitrate";
     public final static String VIDEO_RESOLUTION = "video_resolution";
+    public final static String RTC_MODE = "rtc_mode";
     public final static String ORIENTATION = "orientation";
     public final static String ENCODE_TYPE = "encode_type";
     public final static String ENCODE_METHOD = "encode_method";
@@ -157,13 +159,17 @@ public class CameraActivity extends Activity implements
     public final static String START_AUTO = "start_auto";
     public static final String SHOW_DEBUGINFO = "show_debuginfo";
 
+    private int mRTCMode = 0;
+    private Boolean mShowBgPicture = false;
+
     public static void startActivity(Context context, int fromType,
                                      String rtmpUrl, int frameRate,
                                      int videoBitrate, int audioBitrate,
                                      int videoResolution, int orientation,
                                      int encodeType, int encodeMethod,
                                      int encodeScene, int encodeProfile,
-                                     boolean startAuto, boolean showDebugInfo) {
+                                     boolean startAuto, boolean showDebugInfo,
+                                     int rtcMode) {
         Intent intent = new Intent(context, CameraActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.putExtra("type", fromType);
@@ -179,6 +185,7 @@ public class CameraActivity extends Activity implements
         intent.putExtra(ENCODE_PROFILE, encodeProfile);
         intent.putExtra(START_AUTO, startAuto);
         intent.putExtra(SHOW_DEBUGINFO, showDebugInfo);
+        intent.putExtra(RTC_MODE, rtcMode);
         context.startActivity(intent);
     }
 
@@ -291,6 +298,8 @@ public class CameraActivity extends Activity implements
             if (audioBitrate > 0) {
                 mStreamer.setAudioKBitrate(audioBitrate);
             }
+
+            mRTCMode = bundle.getInt(RTC_MODE, 0);
 
             int videoResolution = bundle.getInt(VIDEO_RESOLUTION, 0);
             mStreamer.setCameraCaptureResolution(videoResolution);
@@ -535,6 +544,9 @@ public class CameraActivity extends Activity implements
         mCameraHintView.hideAll();
 
         startCameraPreviewWithPermCheck();
+        if (mShowBgPicture) {
+            showBgPicture();
+        }
     }
 
     @Override
@@ -547,6 +559,9 @@ public class CameraActivity extends Activity implements
         // setOffscreenPreview to enable camera capture in background
         mStreamer.setOffscreenPreview(mStreamer.getPreviewWidth(),
                 mStreamer.getPreviewHeight());
+        if (mShowBgPicture) {
+            hideBgPicture();
+        }
     }
 
     @Override
@@ -615,23 +630,28 @@ public class CameraActivity extends Activity implements
     }
 
     private void startRTC() {
-        //设置连麦时小窗口位置尺寸
-        mStreamer.setRTCSubScreenRect(0.6f, 0.05f, 0.35f, 0.35f, KMCAgoraStreamer
-                .SCALING_MODE_CENTER_CROP);
-        //设置连麦时本地camera窗口位置尺寸
-        mStreamer.setRTCMainScreenRect(0.f, 0.f, 1.0f, 1.0f,
-                KMCAgoraStreamer.SCALING_MODE_CENTER_CROP);
-        //设置主窗口为camera窗口
-        mStreamer.setRTCMainScreen(KMCAgoraStreamer.RTC_MAIN_SCREEN_CAMERA);
+        if (mRTCMode == DemoActivity.RTC_DEFAULT_MODE) {
+            //设置连麦时小窗口位置尺寸
+            mStreamer.setRTCSubScreenRect(0.6f, 0.05f, 0.35f, 0.35f, KMCAgoraStreamer
+                    .SCALING_MODE_CENTER_CROP);
+            //设置连麦时本地camera窗口位置尺寸
+            mStreamer.setRTCMainScreenRect(0.f, 0.f, 1.0f, 1.0f,
+                    KMCAgoraStreamer.SCALING_MODE_CENTER_CROP);
+            //设置主窗口为camera窗口
+            mStreamer.setRTCMainScreen(KMCAgoraStreamer.RTC_MAIN_SCREEN_CAMERA);
+        } else if (mRTCMode == DemoActivity.RTC_PK_MODE) {
+            //设置连麦时小窗口位置尺寸
+            mStreamer.setRTCSubScreenRect(0.5f, 0.25f, 0.5f, 0.5f, KMCAgoraStreamer
+                    .SCALING_MODE_CENTER_CROP);
+            //设置连麦时本地camera窗口位置尺寸
+            mStreamer.setRTCMainScreenRect(0.f, 0.25f, 0.5f, 0.5f,
+                    KMCAgoraStreamer.SCALING_MODE_CENTER_CROP);
+            //设置主窗口为camera窗口
+            mStreamer.setRTCMainScreen(KMCAgoraStreamer.RTC_MAIN_SCREEN_CAMERA);
 
-//          //设置连麦时小窗口位置尺寸
-//           mStreamer.setRTCSubScreenRect(0.5f, 0.f, 0.5f, 0.5f, KMCAgoraStreamer
-//          .SCALING_MODE_CENTER_CROP);
-//          //设置连麦时本地camera窗口位置尺寸
-//          mStreamer.setRTCMainScreenRect(0.f, 0.f, 0.5f, 0.5f,
-//          KMCAgoraStreamer.SCALING_MODE_CENTER_CROP);
-//          //设置主窗口为camera窗口
-//          mStreamer.setRTCMainScreen(KMCAgoraStreamer.RTC_MAIN_SCREEN_CAMERA);
+            mShowBgPicture = true;
+            showBgPicture();
+        }
 
         String tempChannel = "ksy24";
         mStreamer.startRTC(tempChannel);
@@ -647,6 +667,9 @@ public class CameraActivity extends Activity implements
 
         mRTCText.setText("开始RTC");
         mRTCText.postInvalidate();
+
+        hideBgPicture();
+        mShowBgPicture = false;
     }
 
     private void stopChronometer() {
@@ -1377,5 +1400,16 @@ public class CameraActivity extends Activity implements
 
         mStreamer.setRTCSubScreenRect(left, top, width, height,
                 KMCAgoraStreamer.SCALING_MODE_CENTER_CROP);
+    }
+
+    public void showBgPicture() {
+        mStreamer.setBgPictureRect(0.f, 0.f, 1.0f, 1.0f,
+                1.0f, KMCAgoraStreamer.SCALING_MODE_CENTER_CROP);
+        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.bg_test);
+        mStreamer.showBgPicture(bitmap);
+    }
+
+    public void hideBgPicture() {
+        mStreamer.hideBgPicture();
     }
 }

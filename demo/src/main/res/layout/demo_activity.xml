@@ -26,7 +26,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/rtmpTxt"
-            android:text="rtmp://test.uplive.ks-cdn.com/live/androidtest" />
+            android:text="rtmp://120.92.224.235/live/kmc_agora_test" />
 
         <Button
             android:id="@+id/connectBT"
@@ -37,10 +37,33 @@
             android:text="准备直播" />
 
         <RadioGroup
+            android:id="@+id/rtc_mode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/connectBT"
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/default_mode"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="大小窗口模式"/>
+
+            <RadioButton
+                android:id="@+id/pk_mode"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="false"
+                android:text="1：1 PK模式"/>
+        </RadioGroup>
+
+        <RadioGroup
             android:id="@+id/resolution_group"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/connectBT"
+            android:layout_below="@+id/rtc_mode"
             android:layout_marginTop="10dp"
             android:orientation="horizontal">
 
