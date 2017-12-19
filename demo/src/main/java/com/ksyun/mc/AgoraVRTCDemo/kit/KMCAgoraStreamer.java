@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Bitmap;
 import android.graphics.RectF;
 import android.media.AudioManager;
 import android.os.Build;
@@ -30,7 +31,8 @@ public class KMCAgoraStreamer extends KSYStreamer {
     private static final boolean DEBUG = false;
     private static final String VERSION = "1.0.4.0";
 
-    private static final int mIdxVideoSub = 3;
+    protected int mIdxBgPicture = 0;
+    private static final int mIdxVideoSub = 4;
     private static final int mIdxAudioRemote = 2;
 
     private KMCAgoraVRTCClient mRTCClient;
@@ -64,6 +66,7 @@ public class KMCAgoraStreamer extends KSYStreamer {
     private int mPresetMainMode = SCALING_MODE_CENTER_CROP;
 
     private boolean mMuteAudio;
+    private PictureCapture mPictureCapture;
 
     public KMCAgoraStreamer(Context context) {
         super(context.getApplicationContext());
@@ -166,6 +169,7 @@ public class KMCAgoraStreamer extends KSYStreamer {
         mHeadSetPlugged = false;
         mIsCalling = false;
         super.initModules();
+
         mAudioCapture.setSampleRate(16000);
         //rtc remote image
         mRTCClient = new KMCAgoraVRTCClient(mGLRender, mContext);
@@ -240,6 +244,18 @@ public class KMCAgoraStreamer extends KSYStreamer {
                 }
             }
         });
+
+        mIdxCamera = 1;
+        mIdxWmLogo = 2;
+        mIdxWmTime = 3;
+        updateRTCConnect(RTC_MAIN_SCREEN_CAMERA);
+        // create pip modules
+        mPictureCapture = new PictureCapture(mGLRender);
+        // pip connection
+        mPictureCapture.getSrcPin().connect(getImgTexPreviewMixer().getSinkPin(mIdxBgPicture));
+        getImgTexPreviewMixer().setScalingMode(mIdxBgPicture, ImgTexMixer.SCALING_MODE_CENTER_CROP);
+        mPictureCapture.getSrcPin().connect(getImgTexMixer().getSinkPin(mIdxBgPicture));
+        getImgTexMixer().setScalingMode(mIdxBgPicture, ImgTexMixer.SCALING_MODE_CENTER_CROP);
     }
 
     @Override
@@ -649,5 +665,22 @@ public class KMCAgoraStreamer extends KSYStreamer {
         if (mRTCClient != null) {
             mRTCClient.authorize(token, listener);
         }
+    }
+
+    public void setBgPictureRect(float x, float y, float w, float h,
+                                 float alpha, int mode) {
+        getImgTexPreviewMixer().setRenderRect(mIdxBgPicture, x, y, w, h, alpha);
+        getImgTexMixer().setRenderRect(mIdxBgPicture, x, y, w, h, alpha);
+
+        getImgTexPreviewMixer().setScalingMode(mIdxBgPicture, mode);
+        getImgTexMixer().setScalingMode(mIdxBgPicture, mode);
+    }
+
+    public void showBgPicture(Bitmap bitmap) {
+        mPictureCapture.start(bitmap);
+    }
+
+    public void hideBgPicture() {
+        mPictureCapture.stop();
     }
 }
