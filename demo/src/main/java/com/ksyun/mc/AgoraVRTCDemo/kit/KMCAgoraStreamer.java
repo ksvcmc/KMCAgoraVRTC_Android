@@ -125,13 +125,11 @@ public class KMCAgoraStreamer extends KSYStreamer {
         mPresetMainHeight = height;
         mPresetMainMode = mode;
 
-        if (isRemoteConnected()) {
-            mImgTexMixer.setRenderRect(mIdxCamera, left, top, width, height, 1.0f);
-            mImgTexPreviewMixer.setRenderRect(mIdxCamera, left, top, width, height, 1.0f);
+        mImgTexMixer.setRenderRect(mIdxCamera, left, top, width, height, 1.0f);
+        mImgTexPreviewMixer.setRenderRect(mIdxCamera, left, top, width, height, 1.0f);
 
-            mImgTexMixer.setScalingMode(mIdxCamera, mode);
-            mImgTexPreviewMixer.setScalingMode(mIdxCamera, mode);
-        }
+        mImgTexMixer.setScalingMode(mIdxCamera, mode);
+        mImgTexPreviewMixer.setScalingMode(mIdxCamera, mode);
     }
 
 
@@ -588,7 +586,7 @@ public class KMCAgoraStreamer extends KSYStreamer {
     }
 
     private void updateRemoteSize(int rtcMainScreen) {
-        if (!mIsRemoteConnected) {
+        if (!mIsCalling) {
             mImgTexMixer.setRenderRect(mIdxCamera, 0.f, 0.f, 1.0f, 1.0f, 1.0f);
             mImgTexPreviewMixer.setRenderRect(mIdxCamera, 0.f, 0.f, 1.0f, 1.0f, 1.0f);
             return;
