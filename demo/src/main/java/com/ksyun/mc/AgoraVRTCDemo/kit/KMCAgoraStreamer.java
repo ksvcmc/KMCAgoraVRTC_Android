@@ -451,6 +451,12 @@ public class KMCAgoraStreamer extends KSYStreamer {
         }
     }
 
+    public void registerAgoraEventListener(KMCAgoraEventListener listener) {
+        if (mRTCClient != null) {
+            mRTCClient.registerEventListener(listener);
+        }
+    }
+
     private class MusicIntentReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {

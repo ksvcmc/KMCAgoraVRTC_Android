@@ -14,6 +14,8 @@ import android.graphics.Color;
 import android.graphics.RectF;
 import android.hardware.Camera;
 import android.hardware.SensorManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.opengl.GLSurfaceView;
 import android.os.Build;
 import android.os.Bundle;
@@ -44,6 +46,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.ksyun.mc.AgoraVRTCDemo.kit.KMCAgoraStreamer;
+import com.ksyun.mc.agoravrtc.AgoraErrorCode;
+import com.ksyun.mc.agoravrtc.KMCAgoraEventListener;
 import com.ksyun.mc.agoravrtc.KMCAuthResultListener;
 import com.ksyun.media.player.IMediaPlayer;
 import com.ksyun.media.streamer.capture.CameraCapture;
@@ -404,13 +408,86 @@ public class CameraActivity extends Activity implements
         if (mWaterMarkCheckBox.isChecked()) {
             showWaterMark();
         }
+
+        mStreamer.registerAgoraEventListener(new KMCAgoraEventListener() {
+            @Override
+            public void onEvent(int event, Object... data) {
+                switch (event) {
+                    case KMCAgoraEventListener.USER_JOINED: {
+                        int uid = (int) data[0];
+                        Log.d(TAG, "用户 " + uid + " 加入频道");
+                        break;
+                    }
+
+                    case KMCAgoraEventListener.JOIN_CHANNEL_RESULT: {
+                        boolean success = (Boolean) data[0];
+                        if (success) {
+                            Log.d(TAG, "加入频道成功");
+                            makeToast("加入频道成功");
+                        }
+                        break;
+                    }
+
+                    case KMCAgoraEventListener.FIRST_FRAME_DECODED: {
+                        break;
+                    }
+
+                    case KMCAgoraEventListener.LEAVE_CHANNEL: {
+                        Log.d(TAG, "退出频道");
+                        break;
+                    }
+
+                    case KMCAgoraEventListener.USER_OFFLINE: {
+                        int uid = (int) data[0];
+                        Log.d(TAG, "用户 " + uid + " 离开频道");
+                        break;
+                    }
+
+                    case KMCAgoraEventListener.ERROR: {
+                        int errorCode = (Integer) data[0];
+
+                        switch (errorCode) {
+                            case AgoraErrorCode.ERR_INVALID_APP_ID:
+                                makeToast("错误的app id");
+                                stopRTC();
+                                break;
+
+                            case AgoraErrorCode.ERR_GET_VALID_CHANNEL_KEY:
+                                makeToast("获取channel key失败");
+                                stopRTC();
+                                break;
+
+                            case AgoraErrorCode.ERR_INVALID_ARGUMENT:
+                                Log.d(TAG, "调用api参数错误");
+                                stopRTC();
+                                break;
+
+                            case AgoraErrorCode.ERR_NOT_READY:
+                                makeToast("未初始化完成");
+                                stopRTC();
+                                break;
+
+                            case AgoraErrorCode.ERR_REFUSED:
+                                makeToast("不能发起通话，可能是处于另外一个通话中未退出，或者创建频道失败");
+                                stopRTC();
+                                break;
+
+                            default:
+                                Log.d(TAG, "错误码 " + errorCode);
+                        }
+
+                    }
+                }
+
+            }
+        });
     }
 
     private void makeToast(final String str) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Toast toast = Toast.makeText(CameraActivity.this, str, Toast.LENGTH_LONG);
+                Toast toast = Toast.makeText(CameraActivity.this, str, Toast.LENGTH_SHORT);
                 toast.setGravity(Gravity.CENTER, 0, 0);
                 toast.show();
             }
@@ -630,6 +707,10 @@ public class CameraActivity extends Activity implements
     }
 
     private void startRTC() {
+        if (!isNetworkConnectionAvailable(this)) {
+            makeToast("网络错误，请检查网络设置");
+            return;
+        }
         if (mRTCMode == DemoActivity.RTC_DEFAULT_MODE) {
             //设置连麦时小窗口位置尺寸
             mStreamer.setRTCSubScreenRect(0.6f, 0.05f, 0.35f, 0.35f, KMCAgoraStreamer
@@ -661,6 +742,13 @@ public class CameraActivity extends Activity implements
         mRTCText.postInvalidate();
     }
 
+    private boolean isNetworkConnectionAvailable(Context context) {
+        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo info = cm.getActiveNetworkInfo();
+        if (info == null) return false;//return true if can't ge get net info
+        NetworkInfo.State network = info.getState();
+        return (network == NetworkInfo.State.CONNECTED || network == NetworkInfo.State.CONNECTING);
+    }
     private void stopRTC() {
         mStreamer.stopRTC();
         mIsCaling = false;

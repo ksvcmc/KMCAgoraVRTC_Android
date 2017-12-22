@@ -164,6 +164,18 @@ public class KMCAgoraVRTCClient implements KMCAgoraVRTCCallback, KMCAuthResultLi
         mRTCWrapper.joinChannel(channel, uid);
     }
 
+    /**
+     * join channel
+     *
+     * @param channel channel name
+     * @param uid user id
+     * @param retryTimes 发生错误重试次数，默认5次
+     */
+    public void joinChannel(String channel, int uid, int retryTimes) {
+        enableObserver(true);
+        mRTCWrapper.joinChannel(channel, uid, retryTimes);
+    }
+
     public void leaveChannel() {
         enableObserver(false);
         mRTCWrapper.leaveChannel();
