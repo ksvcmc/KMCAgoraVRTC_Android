@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.SettingsActivity">
+
+    <RelativeLayout
+        android:id="@+id/settings_action_bar"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:orientation="horizontal"
+        android:background="@color/bg"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true">
+
+        <ImageView
+            android:id="@+id/back_off"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="18.3dp"
+            android:layout_marginStart="18.3dp"
+            android:src="@drawable/back" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:layout_centerVertical="true"
+            android:text="@string/settings_title"
+            android:textColor="@color/white" />
+
+        <TextView
+            android:id="@+id/save_config"
+            android:layout_width="30dp"
+            android:layout_height="20dp"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="20dp"
+            android:layout_marginRight="20dp"
+            android:text="@string/save"
+            android:textColor="@color/white" />
+    </RelativeLayout>
+
+    <ScrollView
+        android:id="@+id/scroll_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/settings_action_bar"
+        android:scrollbars="vertical"
+        android:fadingEdge="vertical"
+        >
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@color/bg_settings"
+            android:scrollbars="vertical"
+            android:fadingEdge="vertical"
+            >
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginBottom="30dp"
+                android:layout_marginEnd="23dp"
+                android:layout_marginLeft="24dp"
+                android:layout_marginRight="23dp"
+                android:layout_marginStart="24dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:text="@string/preview_resolution"
+                    android:textColor="@color/settings_txt_color" />
+
+                <com.sevenheaven.segmentcontrol.SegmentControl
+                    android:id="@+id/preview_resolution"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:orientation="horizontal"
+                    android:textSize="18sp"
+                    app:horizonGap="10dp"
+                    app:normalColor="@color/bg"
+                    app:selectedColor="@color/white"
+                    app:separatorWidth="2dp"
+                    app:textColors="@color/settings_txt_color"
+                    app:texts="360P|540P|720P"
+                    app:verticalGap="10dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:text="@string/target_resolution"
+                    android:textColor="@color/settings_txt_color" />
+
+                <com.sevenheaven.segmentcontrol.SegmentControl
+                    android:id="@+id/target_resolution"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:orientation="horizontal"
+                    android:textSize="18sp"
+                    app:horizonGap="10dp"
+                    app:normalColor="@color/bg"
+                    app:selectedColor="@color/white"
+                    app:separatorWidth="2dp"
+                    app:textColors="@color/settings_txt_color"
+                    app:texts="360P|540P|720P"
+                    app:verticalGap="10dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:text="@string/fps"
+                    android:textColor="@color/settings_txt_color" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:orientation="horizontal"
+                    android:weightSum="10">
+
+                    <com.xw.repo.BubbleSeekBar
+                        android:id="@+id/fps"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_weight="9"
+                        app:bsb_is_float_type="false"
+                        app:bsb_max="15"
+                        app:bsb_min="1"
+                        app:bsb_progress="15"
+                        app:bsb_track_size="5dp"
+                        app:bsb_second_track_color="@color/white"
+                        app:bsb_thumb_color="@color/white"
+                        app:bsb_track_color="@color/grey"/>
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="@string/max_fps"
+                        android:textColor="@color/settings_txt_color" />
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:text="@string/encode_type"
+                    android:textColor="@color/settings_txt_color" />
+
+                <com.sevenheaven.segmentcontrol.SegmentControl
+                    android:id="@+id/encode_mehtod"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:orientation="horizontal"
+                    android:textSize="18sp"
+                    app:horizonGap="10dp"
+                    app:normalColor="@color/bg"
+                    app:selectedColor="@color/white"
+                    app:separatorWidth="2dp"
+                    app:textColors="@color/settings_txt_color"
+                    app:texts="软编|硬编"
+                    app:verticalGap="10dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:text="@string/vcodec_id"
+                    android:textColor="@color/settings_txt_color" />
+
+                <com.sevenheaven.segmentcontrol.SegmentControl
+                    android:id="@+id/vcodec_id"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:orientation="horizontal"
+                    android:textSize="18sp"
+                    app:horizonGap="10dp"
+                    app:normalColor="@color/bg"
+                    app:selectedColor="@color/white"
+                    app:separatorWidth="2dp"
+                    app:textColors="@color/settings_txt_color"
+                    app:texts="h264|h265"
+                    app:verticalGap="10dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:text="@string/acodec_profile"
+                    android:textColor="@color/settings_txt_color" />
+
+                <com.sevenheaven.segmentcontrol.SegmentControl
+                    android:id="@+id/acodec_profile"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:orientation="horizontal"
+                    android:textSize="18sp"
+                    app:horizonGap="10dp"
+                    app:normalColor="@color/bg"
+                    app:selectedColor="@color/white"
+                    app:separatorWidth="2dp"
+                    app:textColors="@color/settings_txt_color"
+                    app:texts="AAC LC|AAC HE"
+                    app:verticalGap="10dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:text="@string/vbps"
+                    android:textColor="@color/settings_txt_color" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:orientation="horizontal"
+                    android:weightSum="10">
+
+                    <com.xw.repo.BubbleSeekBar
+                        android:id="@+id/video_kbitrate"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_weight="9"
+                        app:bsb_is_float_type="false"
+                        app:bsb_max="800"
+                        app:bsb_min="1"
+                        app:bsb_progress="800"
+                        app:bsb_track_size="5dp"
+                        app:bsb_second_track_color="@color/white"
+                        app:bsb_thumb_color="@color/white"
+                        app:bsb_track_color="@color/grey" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="@string/max_vbps"
+                        android:textColor="@color/settings_txt_color" />
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:text="@string/abps"
+                    android:textColor="@color/settings_txt_color" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:orientation="horizontal"
+                    android:weightSum="10">
+
+                    <com.xw.repo.BubbleSeekBar
+                        android:id="@+id/audio_kbitrate"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_weight="9"
+                        app:bsb_is_float_type="false"
+                        app:bsb_max="48"
+                        app:bsb_min="1"
+                        app:bsb_progress="48"
+                        app:bsb_track_size="5dp"
+                        app:bsb_second_track_color="@color/white"
+                        app:bsb_thumb_color="@color/white"
+                        app:bsb_track_color="@color/grey" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="@string/max_abps"
+                        android:textColor="@color/settings_txt_color" />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+
+</RelativeLayout>

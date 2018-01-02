@@ -1,5 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+
+    <color name="bg">#18181d</color>
+    <color name="bg_info">#00000066</color>
+    <color name="white">#ffffff</color>
+    <color name="settings_txt_color">#B7B6B6</color>
+    <color name="grey">#404046</color>
+    <color name="stream_url_bg">#2e2e35</color>
+    <color name="chosen">#50e3c2</color>
+    <color name="bg2">#9d9da3</color>
+    <color name="bg_settings">#27272c</color>
 
     <color name="bg_color_2">#ffe8e8e8</color>
     <color name="recorder_bg_new">#00000000</color>

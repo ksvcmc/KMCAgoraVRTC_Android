@@ -12,7 +12,7 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentTop="true" />
 
-    <com.ksyun.mc.AgoraVRTCDemo.CameraHintView
+    <com.ksyun.mc.AgoraVRTCDemo.ui.CameraHintView
         android:id="@+id/camera_hint"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

@@ -28,6 +28,36 @@
     <!-- Get your own app id at https://dashboard.agora.io/ -->
     <!--#YOUR APP ID#-->
     <string name="app_id">e58027d14ffa40c18deaab1754e2fc37</string>
+    <string name="switch_rtc_user">切换用户</string>
+    <string name="demo_note">Demo 说明</string>
+    <string name="single_line_input">请输入频道号</string>
+    <string name="start">开始连麦</string>
+    <string name="settings">参数设置</string>
+    <string name="channel_id">连麦频道</string>
+    <string name="main_activity_header">视频连麦Demo</string>
+    <string name="note">\n \n 视频连麦，由声网提供。此技术可运用在金山直播SDK，其他SDK要根据其开放性决定。
+        \n \n
+        声网1对1视频连麦产品，是全球首个基于UDP的直播连麦SDK，声网在全球部署了近100个数据中心，通过只能路由算法保证全球跨国、跨网的稳定低延时互动。
+        \n \n
+        若想进一步了解，请联系我们 \n
+        邮件: KSC-VBU-KMC@kingsoft.com</string>
+    <string name="channel_id_null">请输入频道名称</string>
+    <string name="network_error">网络错误</string>
+    <string name="room_full">房间已满</string>
+    <string name="save">保存</string>
+    <string name="settings_title">视频连麦Demo设置</string>
+    <string name="preview_resolution">预览分辨率</string>
+    <string name="target_resolution">推流分辨率</string>
+    <string name="fps">视频帧率</string>
+    <string name="max_fps">15</string>
+    <string name="encode_type">编码器类型</string>
+    <string name="vbps">视频码率</string>
+    <string name="abps">音频码率</string>
+    <string name="max_vbps">800</string>
+    <string name="max_abps">48</string>
+    <string name="vcodec_id">视频编码器</string>
+    <string name="acodec_profile">AAC Profile</string>
+    <string name="rtc_screen_mode">连麦模式</string>
 
 
 </resources>

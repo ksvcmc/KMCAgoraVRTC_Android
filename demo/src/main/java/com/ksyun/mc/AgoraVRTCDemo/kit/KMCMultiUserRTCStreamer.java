@@ -13,36 +13,36 @@ import android.util.Log;
 
 import com.ksyun.mc.agoravrtc.AgoraErrorCode;
 import com.ksyun.mc.agoravrtc.AgoraVideoProfile;
+import com.ksyun.mc.agoravrtc.Constants;
 import com.ksyun.mc.agoravrtc.KMCAgoraEventListener;
 import com.ksyun.mc.agoravrtc.KMCAuthResultListener;
+import com.ksyun.media.streamer.capture.ImgTexSrcPin;
 import com.ksyun.media.streamer.filter.imgbuf.ImgBufScaleFilter;
 import com.ksyun.media.streamer.filter.imgtex.ImgTexMixer;
 import com.ksyun.media.streamer.filter.imgtex.ImgTexScaleFilter;
 import com.ksyun.media.streamer.framework.ImgBufFormat;
 import com.ksyun.media.streamer.kit.KSYStreamer;
 
-import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by sujia on 2017/7/17.
  */
-public class KMCAgoraStreamer extends KSYStreamer {
-    private static final String TAG = "KMCAgoraStreamer";
+public class KMCMultiUserRTCStreamer extends KSYStreamer {
+    private static final String TAG = "KMCMultiUserRTCStreamer";
     private static final boolean DEBUG = false;
-    private static final String VERSION = "1.0.4.0";
 
     protected int mIdxBgPicture = 0;
-    private static final int mIdxVideoSub = 4;
     private static final int mIdxAudioRemote = 2;
 
-    private KMCAgoraVRTCClient mRTCClient;
+    private KMCMultiUserRTCClient mRTCClient;
     private ImgTexScaleFilter mRTCRemoteImgTexScaleFilter;
     private ImgTexScaleFilter mRTCImgTexScaleFilter;
     private ImgBufScaleFilter mImgBufScale;
 
     public static final int RTC_MAIN_SCREEN_CAMERA = 1;
     public static final int RTC_MAIN_SCREEN_REMOTE = 2;
-    private int mRTCMainScreen = RTC_MAIN_SCREEN_CAMERA;
+    private int mRTCMainScreen = RTC_MAIN_SCREEN_REMOTE;
 
     public static final int SCALING_MODE_FULL_FILL = ImgTexMixer.SCALING_MODE_FULL_FILL;
     public static final int SCALING_MODE_BEST_FIT = ImgTexMixer.SCALING_MODE_BEST_FIT;
@@ -53,112 +53,12 @@ public class KMCAgoraStreamer extends KSYStreamer {
     private boolean mIsCalling = false;
     private boolean mIsRemoteConnected = false;
 
-    private float mPresetSubLeft = 0.65f;
-    private float mPresetSubTop = 0.f;
-    private float mPresetSubWidth = 0.35f;
-    private float mPresetSubHeight = 0.35f;
-    private int mPresetSubMode = SCALING_MODE_CENTER_CROP;
-
-    private float mPresetMainLeft = 0.f;
-    private float mPresetMainTop = 0.f;
-    private float mPresetMainWidth = 1.f;
-    private float mPresetMainHeight = 1.f;
-    private int mPresetMainMode = SCALING_MODE_CENTER_CROP;
-
     private boolean mMuteAudio;
     private PictureCapture mPictureCapture;
 
-    public KMCAgoraStreamer(Context context) {
+    public KMCMultiUserRTCStreamer(Context context) {
         super(context.getApplicationContext());
     }
-
-
-    /**
-     * set rtc main Screen
-     *
-     * @param mainScreenType
-     */
-    public void setRTCMainScreen(int mainScreenType) {
-        if (mainScreenType < RTC_MAIN_SCREEN_CAMERA
-                || mainScreenType > RTC_MAIN_SCREEN_REMOTE) {
-            throw new IllegalArgumentException("Invalid rtc main screen type");
-        }
-        mRTCMainScreen = mainScreenType;
-    }
-
-    /**
-     * the sub screen position
-     * must be set before registerRTC
-     *
-     * @param width  0~1 default value 0.35f
-     * @param height 0~1 default value 0.3f
-     * @param left   0~1 default value 0.65f
-     * @param top    0~1 default value 0.f
-     * @param mode   scaling mode
-     */
-    public void setRTCSubScreenRect(float left, float top, float width, float height, int mode) {
-        mPresetSubLeft = left;
-        mPresetSubTop = top;
-        mPresetSubWidth = width;
-        mPresetSubHeight = height;
-        mPresetSubMode = mode;
-
-        mImgTexMixer.setRenderRect(mIdxVideoSub, left, top, width, height, 1.0f);
-        mImgTexMixer.setScalingMode(mIdxVideoSub, mode);
-
-        mImgTexPreviewMixer.setRenderRect(mIdxVideoSub, left, top, width, height, 1.0f);
-        mImgTexPreviewMixer.setScalingMode(mIdxVideoSub, mode);
-    }
-
-    /**
-     * set camera screen rect when rtc connected
-     * @param left 0~1 default value 0.f
-     * @param top 0~1 default value 0.f
-     * @param width 0~1 default value 1.f
-     * @param height 0~1 default value 1.f
-     * @param mode scaling mode
-     */
-    public void setRTCMainScreenRect(float left, float top, float width, float height, int mode) {
-        mPresetMainLeft = left;
-        mPresetMainTop = top;
-        mPresetMainWidth = width;
-        mPresetMainHeight = height;
-        mPresetMainMode = mode;
-
-        if (isRemoteConnected()) {
-            mImgTexMixer.setRenderRect(mIdxCamera, left, top, width, height, 1.0f);
-            mImgTexPreviewMixer.setRenderRect(mIdxCamera, left, top, width, height, 1.0f);
-
-            mImgTexMixer.setScalingMode(mIdxCamera, mode);
-            mImgTexPreviewMixer.setScalingMode(mIdxCamera, mode);
-        }
-    }
-
-
-
-    public RectF getSubScreenRect() {
-        return mImgTexMixer.getRenderRect(mIdxVideoSub);
-    }
-
-    public RectF getMainScreenRect() {
-        return mImgTexMixer.getRenderRect(mIdxCamera);
-    }
-
-    public void switchMainScreen() {
-        if (mRTCMainScreen == RTC_MAIN_SCREEN_REMOTE) {
-            mRTCMainScreen = RTC_MAIN_SCREEN_CAMERA;
-        } else if (mRTCMainScreen == RTC_MAIN_SCREEN_CAMERA) {
-            mRTCMainScreen = RTC_MAIN_SCREEN_REMOTE;
-        }
-
-        setRTCMainScreen(mRTCMainScreen);
-        updateRTCConnect(mRTCMainScreen);
-    }
-
-    public int getRTCMainScreen() {
-        return mRTCMainScreen;
-    }
-
 
     public boolean isRemoteConnected() {
         return mIsRemoteConnected;
@@ -169,10 +69,9 @@ public class KMCAgoraStreamer extends KSYStreamer {
         mHeadSetPlugged = false;
         mIsCalling = false;
         super.initModules();
-
         mAudioCapture.setSampleRate(16000);
         //rtc remote image
-        mRTCClient = new KMCAgoraVRTCClient(mGLRender, mContext);
+        mRTCClient = new KMCMultiUserRTCClient(mGLRender, mContext);
 
         mRTCRemoteImgTexScaleFilter = new ImgTexScaleFilter(mGLRender);
         mRTCRemoteImgTexScaleFilter.setReuseFbo(false);
@@ -196,30 +95,43 @@ public class KMCAgoraStreamer extends KSYStreamer {
                 switch (event) {
                     case KMCAgoraEventListener.USER_JOINED: {
                         int uid = (int) data[0];
-                        Log.i("KMCStreamer","USER_JOINED uid: " + uid);
+                        Log.i(TAG, "USER_JOINED uid: " + uid);
+
                         mRTCClient.startReceiveRemoteData();
+                        mRTCClient.addUser(uid);
                         break;
                     }
 
                     case KMCAgoraEventListener.JOIN_CHANNEL_RESULT: {
-                        mRTCClient.startReceiveRemoteData();
+                        boolean success = (Boolean) data[0];
+                        if (success) {
+                            Log.d(TAG, "join channel success");
+                        }
                         break;
                     }
 
                     case KMCAgoraEventListener.FIRST_FRAME_DECODED: {
+                        int uid = (int) data[0];
+                        int weight = (int) data[1];
+                        int height = (int) data[2];
+                        Log.d(TAG, "onFirstRemoteVideoDecoded, uid:" + uid + " , weight:" + weight
+                        + " height:" + height);
+
                         setAudioMode(mHeadSetPlugged ? AudioManager.MODE_IN_COMMUNICATION :
                                 AudioManager.MODE_NORMAL);
                         mIsRemoteConnected = true;
-                        Log.d(TAG, "onFirstRemoteVideoDecoded " + Arrays.toString(data));
-                        updateRTCConnect(mRTCMainScreen);
+                        updateRTCScreen();
                         break;
                     }
 
                     case KMCAgoraEventListener.LEAVE_CHANNEL: {
-                        // temporarily only one remote stream supported, so reset uid here
                         mIsRemoteConnected = false;
+                        Log.d(TAG, "leave channel");
+
                         mRTCClient.stopReceiveRemoteData();
-                        updateRTCConnect(RTC_MAIN_SCREEN_CAMERA);
+                        mRTCClient.clearSrcPins();
+                        updateRTCScreen();
+
                         if(!mIsCalling) {
                             if ((mIsRecording || mIsFileRecording) &&
                                     !mAudioCapture.isRecordingState()) {
@@ -230,13 +142,20 @@ public class KMCAgoraStreamer extends KSYStreamer {
                     }
 
                     case KMCAgoraEventListener.USER_OFFLINE: {
-                        mIsRemoteConnected = false;
-                        updateRTCConnect(RTC_MAIN_SCREEN_CAMERA);
+                        int uid = (int) data[0];
+                        Log.i(TAG, "USER_OFFLINE uid: " + uid);
+
+                        mRTCClient.removeUser(uid);
+                        if (!mRTCClient.hasRemoteConnected()) {
+                            mIsRemoteConnected = false;
+                        }
+                        updateRTCScreen();
                         break;
                     }
 
                     case KMCAgoraEventListener.ERROR: {
                         int errorCode = (Integer) data[0];
+                        Log.i(TAG, "error: " + errorCode);
                         if (errorCode == AgoraErrorCode.ERR_INVALID_APP_ID) {
                             Log.e(TAG, "invalid app id");
                         }
@@ -245,10 +164,11 @@ public class KMCAgoraStreamer extends KSYStreamer {
             }
         });
 
-        mIdxCamera = 1;
-        mIdxWmLogo = 2;
-        mIdxWmTime = 3;
-        updateRTCConnect(RTC_MAIN_SCREEN_CAMERA);
+        //pin 0-4 用做背景图以及rtc画面
+        mIdxWmLogo = 5;
+        mIdxWmTime = 6;
+        updateRTCScreen();
+
         // create pip modules
         mPictureCapture = new PictureCapture(mGLRender);
         // pip connection
@@ -260,27 +180,16 @@ public class KMCAgoraStreamer extends KSYStreamer {
 
     @Override
     public void setRotateDegrees(int degrees) {
-        boolean isLastLandscape = (mRotateDegrees % 180) != 0;
-        boolean isLandscape = (degrees % 180) != 0;
-        if (isLastLandscape != isLandscape) {
-            if(mIsRemoteConnected) {
-                setRTCSubScreenRect(mPresetSubLeft, mPresetSubTop, mPresetSubHeight,
-                        mPresetSubWidth, mPresetSubMode);
-            }
-        }
         super.setRotateDegrees(degrees);
-        if(mIsRemoteConnected) {
-            updateRTCConnect(mRTCMainScreen);
-        }
     }
 
     @Override
     public void setMuteAudio(boolean isMute) {
         super.setMuteAudio(isMute);
         //对所有远端用户进行静音与否
-//        mRTCClient.getRTCWrapper().muteAllRemoteAudioStreams(isMute);
+        mRTCClient.muteAllRemoteAudioStreams(isMute);
         //允许/禁止往网络发送本地音频流
-        mRTCClient.getRTCWrapper().muteLocalAudioStream(isMute);
+        mRTCClient.muteLocalAudioStream(isMute);
 
         mMuteAudio = isMute;
     }
@@ -372,9 +281,9 @@ public class KMCAgoraStreamer extends KSYStreamer {
         mRTCClient.getRemoteAudioSrcPin().connect(mAudioMixer.getSinkPin(mIdxAudioRemote));
 
         //对所有远端用户进行静音与否
-//        mRTCClient.getRTCWrapper().muteAllRemoteAudioStreams(mMuteAudio);
+//        mRTCClient.muteAllRemoteAudioStreams(mMuteAudio);
         //允许/禁止往网络发送本地音频流
-        mRTCClient.getRTCWrapper().muteLocalAudioStream(mMuteAudio);
+        mRTCClient.muteLocalAudioStream(mMuteAudio);
     }
     @Override
     protected void startAudioCapture() {
@@ -391,7 +300,6 @@ public class KMCAgoraStreamer extends KSYStreamer {
 
         //leave rtc
         mRTCClient.stopReceiveRemoteData();
-        setRTCMainScreen(RTC_MAIN_SCREEN_CAMERA);
         mRTCClient.leaveChannel();
 
         //disconnect rtc audio
@@ -418,7 +326,7 @@ public class KMCAgoraStreamer extends KSYStreamer {
     }
 
     /**
-     * Release all resources used by KMCAgoraStreamer.
+     * Release all resources used by KMCMultiUserRTCStreamer.
      */
     @Override
     public void release() {
@@ -448,12 +356,6 @@ public class KMCAgoraStreamer extends KSYStreamer {
     private void unregisterHeadsetPlugReceiver() {
         if (mHeadSetReceiver != null) {
             mContext.unregisterReceiver(mHeadSetReceiver);
-        }
-    }
-
-    public void registerAgoraEventListener(KMCAgoraEventListener listener) {
-        if (mRTCClient != null) {
-            mRTCClient.registerEventListener(listener);
         }
     }
 
@@ -507,71 +409,8 @@ public class KMCAgoraStreamer extends KSYStreamer {
         }
     }
 
-    public RectF getRTCSubScreenRect() {
-        return mImgTexMixer.getRenderRect(mIdxVideoSub);
-    }
-
     public static String getAgoraRTCVersion() {
-        return VERSION;
-    }
-
-    private void updateRTCConnect(int rtcMainScreen) {
-        mImgTexFilterMgt.getSrcPin().disconnect(false);
-        mRTCRemoteImgTexScaleFilter.getSrcPin().disconnect(false);
-        mRTCClient.getImgTexSrcPin().disconnect(false);
-
-        boolean needScale = false;
-        if (mRTCClient.getImgTexFormat() != null) {
-            boolean isLandscape = (mRotateDegrees % 180) != 0;
-
-            if ((isLandscape && mRTCClient.getImgTexFormat().width <
-                    mRTCClient.getImgTexFormat().height) ||
-                    (!isLandscape && mRTCClient.getImgTexFormat().width >
-                            mRTCClient.getImgTexFormat().height)) {
-                needScale = false;
-            }
-        }
-
-        mImgTexFilterMgt.getSrcPin().connect(mRTCImgTexScaleFilter.getSinkPin());
-
-        if (rtcMainScreen == RTC_MAIN_SCREEN_REMOTE) {
-            mImgTexFilterMgt.getSrcPin().connect(mImgTexMixer.getSinkPin(mIdxVideoSub));
-            mImgTexFilterMgt.getSrcPin().connect(mImgTexPreviewMixer.getSinkPin(mIdxVideoSub));
-
-            if (needScale) {
-                mRTCRemoteImgTexScaleFilter.setTargetSize(mRTCClient.getImgTexFormat().height,
-                        mRTCClient.getImgTexFormat().width);
-                mRTCClient.getImgTexSrcPin().connect(mRTCRemoteImgTexScaleFilter.getSinkPin());
-                mRTCRemoteImgTexScaleFilter.getSrcPin().connect(mImgTexMixer.getSinkPin(mIdxCamera));
-                mRTCRemoteImgTexScaleFilter.getSrcPin().connect(mImgTexPreviewMixer.getSinkPin(mIdxCamera));
-
-            } else {
-                mRTCClient.getImgTexSrcPin().connect(mImgTexMixer.getSinkPin(mIdxCamera));
-                mRTCClient.getImgTexSrcPin().connect(mImgTexPreviewMixer.getSinkPin(mIdxCamera));
-            }
-            mImgTexMixer.setMainSinkPinIndex(mIdxVideoSub);
-            mImgTexPreviewMixer.setMainSinkPinIndex(mIdxVideoSub);
-        } else {
-            mImgTexFilterMgt.getSrcPin().connect(mImgTexMixer.getSinkPin(mIdxCamera));
-            mImgTexFilterMgt.getSrcPin().connect(mImgTexPreviewMixer.getSinkPin(mIdxCamera));
-
-            if(mIsRemoteConnected) {
-                if (needScale) {
-                    mRTCRemoteImgTexScaleFilter.setTargetSize(mRTCClient.getImgTexFormat().height,
-                            mRTCClient.getImgTexFormat().width);
-                    mRTCClient.getImgTexSrcPin().connect(mRTCRemoteImgTexScaleFilter.getSinkPin());
-                    mRTCRemoteImgTexScaleFilter.getSrcPin().connect(mImgTexMixer.getSinkPin(mIdxVideoSub));
-                    mRTCRemoteImgTexScaleFilter.getSrcPin().connect(mImgTexPreviewMixer.getSinkPin(mIdxVideoSub));
-                } else {
-                    mRTCClient.getImgTexSrcPin().connect(mImgTexMixer.getSinkPin(mIdxVideoSub));
-                    mRTCClient.getImgTexSrcPin().connect(mImgTexPreviewMixer.getSinkPin(mIdxVideoSub));
-                }
-            }
-            mImgTexMixer.setMainSinkPinIndex(mIdxCamera);
-            mImgTexPreviewMixer.setMainSinkPinIndex(mIdxCamera);
-        }
-
-        updateRemoteSize(rtcMainScreen);
+        return Constants.VERSION;
     }
 
     public void setAudioMode(int mode) {
@@ -587,90 +426,175 @@ public class KMCAgoraStreamer extends KSYStreamer {
         audioManager.setMode(mode);
     }
 
-    private void updateRemoteSize(int rtcMainScreen) {
-        if (!mIsRemoteConnected) {
-            mImgTexMixer.setRenderRect(mIdxCamera, 0.f, 0.f, 1.0f, 1.0f, 1.0f);
-            mImgTexPreviewMixer.setRenderRect(mIdxCamera, 0.f, 0.f, 1.0f, 1.0f, 1.0f);
-            return;
-        }
-
-        boolean isLandscape = (mRotateDegrees % 180) != 0;
-        boolean tIsLandscape = mRTCClient.getImgTexFormat().width > mRTCClient.getImgTexFormat()
-                .height;
-
-        boolean needScale = false;
-
-        int tWidth = mRTCClient.getImgTexFormat().width;
-        int tHeight = mRTCClient.getImgTexFormat().height;
-
-        //本地预览显示和remote的横竖屏不一致时，需要resize
-        if ((isLandscape && tWidth < tHeight) ||
-                (!isLandscape && tWidth > tHeight)) {
-            needScale = true;
-        }
-
-        if (needScale) {
-            if (rtcMainScreen == RTC_MAIN_SCREEN_REMOTE) {
-                float left, top, w_new, h_new;
-                left =  mPresetSubLeft;
-                top = mPresetSubTop;
-                w_new = mPresetSubWidth;
-                h_new = mPresetSubHeight;
-
-                if (!isLandscape && tIsLandscape) {
-                    left = 0;
-                    w_new = (float) 1.0;
-//                    h_new = (float) (tHeight * mScreenRenderWidth) / (mScreenRenderHeight * tWidth);
-                    h_new = (float) (tHeight * mPreviewWidth) / (mPreviewHeight * tWidth);
-                    top = (float) (1.0 - h_new) / (float) 2.0;
-                } else if (isLandscape && !tIsLandscape) {
-                    top = 0;
-                    h_new = (float) 1.0;
-//                  w_new = (float) (tWidth * mScreenRenderHeight) / (mScreenRenderWidth * tHeight);
-                    w_new = (float) (tWidth * mPreviewHeight) / (mPreviewWidth * tHeight);
-                    left = (float) (1.0 - w_new) / (float) 2.0;
-                }
-
-                mImgTexMixer.setRenderRect(mIdxCamera, left, top, w_new,
-                        h_new, 1.0f);
-                mImgTexPreviewMixer.setRenderRect(mIdxCamera, left, top, w_new,
-                        h_new, 1.0f);
-
-            } else if (rtcMainScreen == RTC_MAIN_SCREEN_CAMERA) {
-                RectF rect = getRTCSubScreenRect();
-                float w = rect.width();
-                float h = rect.height();
-
-                float w_new;
-                float h_new;
-//              w_new = (float) mScreenRenderHeight * h / (float) mScreenRenderWidth;
-//              h_new = (float) mScreenRenderWidth * w / (float) mScreenRenderHeight;
-                w_new = (float) mPreviewHeight * h / (float) mPreviewWidth;
-                h_new = (float) mPreviewWidth * w / (float) mPreviewHeight;
-
-                float left = (float) (1.0 - w_new - 0.10);
-                float top = (float) 0.05;
-                mImgTexMixer.setRenderRect(mIdxVideoSub, left, top, w_new,
-                        h_new, 1.0f);
-                mImgTexPreviewMixer.setRenderRect(mIdxVideoSub, left, top, w_new,
-                        h_new, 1.0f);
-            }
-        } else {
-            mImgTexMixer.setRenderRect(mIdxCamera, mPresetMainLeft, mPresetMainTop,
-                    mPresetMainWidth, mPresetMainHeight, 1.0f);
-            mImgTexMixer.setRenderRect(mIdxVideoSub, mPresetSubLeft, mPresetSubTop,
-                    mPresetSubWidth, mPresetSubHeight, 1.0f);
-            mImgTexPreviewMixer.setRenderRect(mIdxCamera, mPresetMainLeft, mPresetMainTop,
-                    mPresetMainWidth, mPresetMainHeight, 1.0f);
-            mImgTexPreviewMixer.setRenderRect(mIdxVideoSub, mPresetSubLeft, mPresetSubTop,
-                    mPresetSubWidth, mPresetSubHeight, 1.0f);
-        }
-    }
-
     public void authorize(String token, KMCAuthResultListener listener) {
         if (mRTCClient != null) {
             mRTCClient.authorize(token, listener);
         }
+    }
+
+    public void setOnRTCEventListener(KMCAgoraEventListener listener) {
+        mRTCClient.registerEventListener(listener);
+    }
+
+    public void updateRTCScreen() {
+        List<Integer> userList = mRTCClient.getUserList();
+        if ( userList != null) {
+            //远端用户人数
+            int remote_user_count = userList.size();
+            //默认先连接remote user，camera作为左后一个index
+            int camera_index = remote_user_count < KMCMultiUserRTCClient.MAX_REMOTE_USER ?
+                    remote_user_count + 1 : KMCMultiUserRTCClient.MAX_REMOTE_USER + 1;
+            int remote_user_start_idx = 1;
+
+            //当以camera作为主屏幕（大窗口）显示时，将camera index设置为背景图（0）后第一个index
+            if (remote_user_count == 1 &&
+                    mRTCMainScreen == RTC_MAIN_SCREEN_CAMERA) {
+                camera_index = 1;
+                remote_user_start_idx = 2;
+            }
+
+            //顺序连接remote user和mixer的对应管脚
+            for (int i = 0; i < remote_user_count &&
+                    i < KMCMultiUserRTCClient.MAX_REMOTE_USER; i++) {
+                int uid = userList.get(i);
+                ImgTexSrcPin srcPin = mRTCClient.getImgTexSrcPin(uid);
+                srcPin.disconnect(false);
+                int index = i + remote_user_start_idx;
+                srcPin.connect(mImgTexMixer.getSinkPin(index));
+                srcPin.connect(mImgTexPreviewMixer.getSinkPin(index));
+            }
+
+            mImgTexFilterMgt.getSrcPin().disconnect(false);
+            mImgTexFilterMgt.getSrcPin().connect(mRTCImgTexScaleFilter.getSinkPin());
+            mImgTexFilterMgt.getSrcPin().connect(mImgTexMixer.getSinkPin(camera_index));
+            mImgTexFilterMgt.getSrcPin().connect(mImgTexPreviewMixer.getSinkPin(camera_index));
+            mImgTexMixer.setMainSinkPinIndex(camera_index);
+            mImgTexPreviewMixer.setMainSinkPinIndex(camera_index);
+
+            int mode  = SCALING_MODE_CENTER_CROP;
+            if (remote_user_count == 0) {
+                //只有自己，camera全屏
+                setMixerRect(camera_index, 0.f, 0.f, 1.f, 1.f, mode);
+            } else if (remote_user_count == 1) {
+                //两人连麦的窗口位置及大小根据设置进行
+                if (mRTCMainScreen == RTC_MAIN_SCREEN_REMOTE) {
+                    //remote user画面作为主屏幕
+                    setMixerRect(1, mPresetMainLeft, mPresetMainTop,
+                            mPresetMainWidth, mPresetMainHeight, mPresetMainMode);
+                    setMixerRect(2, mPresetSubLeft, mPresetSubTop,
+                            mPresetSubWidth, mPresetSubHeight, mPresetSubMode);
+                } else {
+                    //本地camera画面作为主屏幕
+                    setMixerRect(1, mPresetMainLeft, mPresetMainTop,
+                            mPresetMainWidth, mPresetMainHeight, mPresetMainMode);
+                    setMixerRect(2, mPresetSubLeft, mPresetSubTop,
+                            mPresetSubWidth, mPresetSubHeight, mPresetSubMode);
+                }
+            } else if (remote_user_count == 2) {
+                //3人连麦，remote user平分屏幕上半部分， camera居中显示在下半部分
+                setMixerRect(1, 0.f, 0.f, 0.5f, 0.5f, mode);
+                setMixerRect(2, 0.5f, 0.f, 0.5f, 0.5f, mode);
+                setMixerRect(3, 0.25f, 0.5f, 0.5f, 0.5f, mode);
+            } else if (remote_user_count >= KMCMultiUserRTCClient.MAX_REMOTE_USER) { //demo最多支持4人连麦
+                //4人连麦，4人4等分屏幕，camera显示在右下角
+                setMixerRect(1, 0.f, 0.f, 0.5f, 0.5f, mode);
+                setMixerRect(2, 0.5f, 0.f, 0.5f, 0.5f, mode);
+                setMixerRect(3, 0.f, 0.5f, 0.5f, 0.5f, mode);
+                setMixerRect(4, 0.5f, 0.5f, 0.5f, 0.5f, mode);
+            }
+        }
+    }
+
+    private void setMixerRect(int index, float left, float top, float width,
+                              float height, int mode) {
+        if (index < 0 || index > mImgTexMixer.getSinkPinNum()) {
+            Log.e(TAG, "index out of bounds of mixer sin pin number");
+            return;
+        }
+
+        mImgTexMixer.setRenderRect(index, left, top, width, height, 1.0f);
+        mImgTexPreviewMixer.setRenderRect(index, left, top, width, height, 1.0f);
+
+        mImgTexMixer.setScalingMode(index, mode);
+        mImgTexPreviewMixer.setScalingMode(index, mode);
+    }
+
+    private float mPresetSubLeft = 0.6f;
+    private float mPresetSubTop = 0.05f;
+    private float mPresetSubWidth = 0.35f;
+    private float mPresetSubHeight = 0.35f;
+    private int mPresetSubMode = SCALING_MODE_CENTER_CROP;
+
+    private float mPresetMainLeft = 0.f;
+    private float mPresetMainTop = 0.f;
+    private float mPresetMainWidth = 1.f;
+    private float mPresetMainHeight = 1.f;
+    private int mPresetMainMode = SCALING_MODE_CENTER_CROP;
+
+    /**
+     * 设置rtc远端图像窗口大小和位置，只在两人连麦时生效
+     *
+     * @param width  0~1 default value 0.35f
+     * @param height 0~1 default value 0.3f
+     * @param left   0~1 default value 0.65f
+     * @param top    0~1 default value 0.f
+     * @param mode   scaling mode
+     */
+    public void setRTCSubScreenRect(float left, float top, float width, float height, int mode) {
+        mPresetSubLeft = left;
+        mPresetSubTop = top;
+        mPresetSubWidth = width;
+        mPresetSubHeight = height;
+        mPresetSubMode = mode;
+    }
+
+    /**
+     *  设置本地camera图像窗口大小和位置，只在两人连麦时生效
+     * @param left 0~1 default value 0.f
+     * @param top 0~1 default value 0.f
+     * @param width 0~1 default value 1.f
+     * @param height 0~1 default value 1.f
+     * @param mode scaling mode
+     */
+    public void setRTCMainScreenRect(float left, float top, float width, float height, int mode) {
+        mPresetMainLeft = left;
+        mPresetMainTop = top;
+        mPresetMainWidth = width;
+        mPresetMainHeight = height;
+        mPresetMainMode = mode;
+    }
+
+    /**
+     * get rect for sub sceen
+     * @return
+     */
+    public RectF getSubScreenRect() {
+        return new RectF(mPresetSubLeft, mPresetSubTop, mPresetSubWidth + mPresetSubLeft,
+                mPresetSubHeight + mPresetSubTop);
+    }
+
+    /**
+     * 设置主屏幕，只在两人连麦时生效
+     *
+     * @param mainScreenType
+     */
+    public void setRTCMainScreen(int mainScreenType) {
+        if (mainScreenType < RTC_MAIN_SCREEN_CAMERA
+                || mainScreenType > RTC_MAIN_SCREEN_REMOTE) {
+            throw new IllegalArgumentException("Invalid rtc main screen type");
+        }
+        mRTCMainScreen = mainScreenType;
+    }
+
+    public void switchMainScreen() {
+        if (mRTCMainScreen == RTC_MAIN_SCREEN_REMOTE) {
+            mRTCMainScreen = RTC_MAIN_SCREEN_CAMERA;
+        } else if (mRTCMainScreen == RTC_MAIN_SCREEN_CAMERA) {
+            mRTCMainScreen = RTC_MAIN_SCREEN_REMOTE;
+        }
+
+        setRTCMainScreen(mRTCMainScreen);
+        updateRTCScreen();
     }
 
     public void setBgPictureRect(float x, float y, float w, float h,
@@ -688,5 +612,17 @@ public class KMCAgoraStreamer extends KSYStreamer {
 
     public void hideBgPicture() {
         mPictureCapture.stop();
+    }
+
+    public KMCMultiUserRTCClient getRTCClient() {
+        return mRTCClient;
+    }
+
+    public int getRTCUserCount() {
+        return mRTCClient.getUserList().size() + 1;
+    }
+
+    public void setAgoraLogPath(String path) {
+        mRTCClient.setLogPath(path);
     }
 }
