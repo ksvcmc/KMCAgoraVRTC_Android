@@ -1,14 +1,14 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 24
-    buildToolsVersion '25.0.0'
+    compileSdkVersion 26
+    buildToolsVersion '26.0.0'
     defaultConfig {
         applicationId 'com.ksyun.mc.AgoraVRTCDemo'
-        minSdkVersion 15
-        targetSdkVersion 24
+        minSdkVersion 23
+        targetSdkVersion 26
         versionCode 1
-        versionName "1.0.7"
+        versionName "2.0.0"
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
@@ -42,10 +42,10 @@ android {
 dependencies {
     compile fileTree(include: '*.jar', dir: 'libs')
     compile 'com.android.support:appcompat-v7:24.2.1'
-    compile 'com.ksyun.media:libksylive-java:2.3.4'
-    compile 'com.ksyun.media:libksylive-arm64:2.3.4'
-    compile 'com.ksyun.media:libksylive-armv7a:2.3.4'
-    compile 'com.ksyun.media:libksylive-x86:2.3.4'
+    compile 'com.ksyun.media:libksylive-java:2.6.1'
+    compile 'com.ksyun.media:libksylive-arm64:2.6.1'
+    compile 'com.ksyun.media:libksylive-armv7a:2.6.1'
+    compile 'com.ksyun.media:libksylive-x86:2.6.1'
     debugCompile 'com.squareup.leakcanary:leakcanary-android:1.5'
     releaseCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5'
     compile 'com.tencent.bugly:crashreport:latest.release'
