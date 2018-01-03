@@ -5,11 +5,7 @@
 金山魔方是一个多媒体能力提供平台，通过统一接入API、统一鉴权、统一计费等多种手段，降低客户接入多媒体处理能力的代价，提供多媒体能力供应商的效率。  
 本文档主要针对视频连麦功能而说明
 ## 效果展示
-### 默认连麦模式(大小窗口)效果
-![Alt text](https://raw.githubusercontent.com/wiki/ksvcmc/KMCAgoraVRTC_Android/lianmai.jpg)
-
-### PK连麦效果
-![pk_demo](https://raw.githubusercontent.com/wiki/ksvcmc/KMCAgoraVRTC_Android/image/pk_demo.jpg)
+![v2.0_demo](https://raw.githubusercontent.com/wiki/ksvcmc/KMCAgoraVRTC_Android/image/v2.0.png)
 
 ## 目录结构
 **demo**: 示例工程  
