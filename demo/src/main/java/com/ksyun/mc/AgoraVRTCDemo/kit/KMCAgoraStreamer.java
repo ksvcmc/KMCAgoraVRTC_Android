@@ -15,6 +15,7 @@ import com.ksyun.mc.agoravrtc.AgoraErrorCode;
 import com.ksyun.mc.agoravrtc.AgoraVideoProfile;
 import com.ksyun.mc.agoravrtc.KMCAgoraEventListener;
 import com.ksyun.mc.agoravrtc.KMCAuthResultListener;
+import com.ksyun.mc.agoravrtc.stats.OnLogEventListener;
 import com.ksyun.media.streamer.filter.imgbuf.ImgBufScaleFilter;
 import com.ksyun.media.streamer.filter.imgtex.ImgTexMixer;
 import com.ksyun.media.streamer.filter.imgtex.ImgTexScaleFilter;
@@ -688,5 +689,22 @@ public class KMCAgoraStreamer extends KSYStreamer {
 
     public void hideBgPicture() {
         mPictureCapture.stop();
+    }
+
+    /**
+     * enable stat module or not
+     * the stat module is enabled by default
+     * @param enable
+     */
+    public void enableStat(boolean enable) {
+        mRTCClient.enableStat(enable);
+    }
+
+    /**
+     * set the log listener
+     * @param listener
+     */
+    public void setRTCLogListener(OnLogEventListener listener) {
+        mRTCClient.setLogListener(listener);
     }
 }

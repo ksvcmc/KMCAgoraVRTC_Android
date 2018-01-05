@@ -37,6 +37,7 @@ import com.ksyun.mc.AgoraVRTCDemo.utils.StreamConfig;
 import com.ksyun.mc.AgoraVRTCDemo.utils.Utils;
 import com.ksyun.mc.agoravrtc.KMCAgoraEventListener;
 import com.ksyun.mc.agoravrtc.KMCAuthResultListener;
+import com.ksyun.mc.agoravrtc.stats.OnLogEventListener;
 import com.ksyun.media.streamer.capture.camera.CameraTouchHelper;
 import com.ksyun.media.streamer.kit.KSYStreamer;
 import com.ksyun.media.streamer.kit.StreamerConstants;
@@ -178,6 +179,13 @@ public class VideoChatActivity extends Activity{
         String stream_info = String.format("房间号:\n %s \n播放地址：\n %s \n ", mChannelName, mStreamer.getUrl());
         mStreamInfo.setText(stream_info);
 
+        //日志打点回调
+        mStreamer.setRTCLogListener(new OnLogEventListener() {
+            @Override
+            public void onLogEvent(String log) {
+                Log.d(TAG, log);
+            }
+        });
         //do kmc rtc auth
         mStreamer.authorize(token, new KMCAuthResultListener() {
             @Override
