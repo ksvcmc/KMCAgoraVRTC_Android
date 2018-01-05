@@ -11,6 +11,7 @@ import com.ksyun.mc.agoravrtc.KMCAgoraVRTC;
 import com.ksyun.mc.agoravrtc.KMCAgoraVRTCCallback;
 import com.ksyun.mc.agoravrtc.KMCAuthResultListener;
 import com.ksyun.mc.agoravrtc.VideoFormat;
+import com.ksyun.mc.agoravrtc.stats.OnLogEventListener;
 import com.ksyun.media.streamer.capture.ImgTexSrcPin;
 import com.ksyun.media.streamer.encoder.ImgTexToBuf;
 import com.ksyun.media.streamer.framework.AVConst;
@@ -81,6 +82,23 @@ public class KMCAgoraVRTCClient implements KMCAgoraVRTCCallback, KMCAuthResultLi
             mAuthResultListener = listener;
             mRTCWrapper.authorize(token, true, this);
         }
+    }
+
+    /**
+     * enable stat module or not
+     * the stat module is enabled by default
+     * @param enable
+     */
+    public void enableStat(boolean enable) {
+        mRTCWrapper.enableStat(enable);
+    }
+
+    /**
+     * set the log listener
+     * @param listener
+     */
+    public void setLogListener(OnLogEventListener listener) {
+        mRTCWrapper.setLogListener(listener);
     }
 
     @Override
