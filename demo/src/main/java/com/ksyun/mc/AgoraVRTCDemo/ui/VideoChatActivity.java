@@ -700,10 +700,10 @@ public class VideoChatActivity extends Activity{
     private void onMuteAudio() {
        if (mMuteAudio) {
            mMuteAudio = false;
-           mMuteButton.setImageResource(R.drawable.audio_on);
+           mMuteButton.setImageResource(R.drawable.audio_off);
        } else {
            mMuteAudio = true;
-           mMuteButton.setImageResource(R.drawable.audio_off);
+           mMuteButton.setImageResource(R.drawable.audio_on);
        }
        mStreamer.setMuteAudio(mMuteAudio);
     }
@@ -731,6 +731,7 @@ public class VideoChatActivity extends Activity{
 
     private void onInfoButtonClicked() {
         mShowStreamInfo = !mShowStreamInfo;
+        mInfoButton.setImageResource(mShowStreamInfo ? R.drawable.info_off : R.drawable.info_on);
         showStreamInfo(mShowStreamInfo);
     }
 
@@ -741,10 +742,10 @@ public class VideoChatActivity extends Activity{
         }
         if (mRTCMode == RTC_DEFAULT_MODE) {
             mRTCMode = RTC_PK_MODE;
-            mChangeRTCMode.setImageResource(R.drawable.pk_mode);
+            mChangeRTCMode.setImageResource(R.drawable.default_mode);
         } else {
             mRTCMode = RTC_DEFAULT_MODE;
-            mChangeRTCMode.setImageResource(R.drawable.default_mode);
+            mChangeRTCMode.setImageResource(R.drawable.pk_mode);
         }
 
         changeRTCMode();
