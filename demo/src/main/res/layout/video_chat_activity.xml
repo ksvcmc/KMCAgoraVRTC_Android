@@ -42,7 +42,7 @@
         android:layout_marginEnd="30dp"
         android:layout_marginRight="30dp"
         android:layout_marginBottom="19dp"
-        android:src="@drawable/default_mode" />
+        android:src="@drawable/pk_mode" />
 
     <ImageView
         android:id="@+id/get_stream_info"
@@ -78,7 +78,7 @@
         android:layout_marginEnd="30dp"
         android:layout_marginRight="30dp"
         android:layout_marginBottom="19dp"
-        android:src="@drawable/audio_on" />
+        android:src="@drawable/audio_off" />
 
     <ImageView
         android:id="@+id/switch_camera"
