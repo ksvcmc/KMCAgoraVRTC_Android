@@ -643,4 +643,28 @@ public class KMCMultiUserRTCStreamer extends KSYStreamer {
     public void setRTCLogListener(OnLogEventListener listener) {
         mRTCClient.setLogListener(listener);
     }
+
+    /**
+     * 该方法调节录音信号音量
+     * @param volume 录音信号音量可在 0~400 范围内进行调节:
+     *               0: 静音
+     *               100: 原始音量
+     *               400: 最大可为原始音量的 4 倍(自带溢出保护)
+     * @return 0: 方法调用成功, <0: 方法调用失败
+     */
+    public int adjustRecordingSignalVolume(int volume) {
+        return mRTCClient.getRTCWrapper().adjustRecordingSignalVolume(volume);
+    }
+
+    /**
+     * 该方法调节播放信号音量
+     * @param volume 播放信号音量可在 0~400 范围内进行调节:
+     *               0: 静音
+     *               100: 原始音量
+     *               400: 最大可为原始音量的 4 倍(自带溢出保护)
+     * @return 0: 方法调用成功, <0: 方法调用失败
+     */
+    public int adjustPlaybackSignalVolume(int volume) {
+        return mRTCClient.getRTCWrapper().adjustPlaybackSignalVolume(volume);
+    }
 }
