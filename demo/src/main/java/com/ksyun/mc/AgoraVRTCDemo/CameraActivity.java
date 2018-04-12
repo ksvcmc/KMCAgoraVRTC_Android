@@ -641,10 +641,10 @@ public class CameraActivity extends Activity implements
             mStreamer.setRTCMainScreen(KMCAgoraStreamer.RTC_MAIN_SCREEN_CAMERA);
         } else if (mRTCMode == DemoActivity.RTC_PK_MODE) {
             //设置连麦时小窗口位置尺寸
-            mStreamer.setRTCSubScreenRect(0.5f, 0.25f, 0.5f, 0.5f, KMCAgoraStreamer
+            mStreamer.setRTCSubScreenRect(0.5f, 0.25f, 0.5f, 0.25f, KMCAgoraStreamer
                     .SCALING_MODE_CENTER_CROP);
             //设置连麦时本地camera窗口位置尺寸
-            mStreamer.setRTCMainScreenRect(0.f, 0.25f, 0.5f, 0.5f,
+            mStreamer.setRTCMainScreenRect(0.f, 0.25f, 0.5f, 0.25f,
                     KMCAgoraStreamer.SCALING_MODE_CENTER_CROP);
             //设置主窗口为camera窗口
             mStreamer.setRTCMainScreen(KMCAgoraStreamer.RTC_MAIN_SCREEN_CAMERA);
