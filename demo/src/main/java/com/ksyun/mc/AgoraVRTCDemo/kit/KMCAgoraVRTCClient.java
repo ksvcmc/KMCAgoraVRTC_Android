@@ -24,6 +24,9 @@ import com.ksyun.media.streamer.framework.SinkPin;
 import com.ksyun.media.streamer.framework.SrcPin;
 import com.ksyun.media.streamer.util.gles.GLRender;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import io.agora.rtc.video.AgoraVideoFrame;
@@ -60,6 +63,7 @@ public class KMCAgoraVRTCClient implements KMCAgoraVRTCCallback, KMCAuthResultLi
 
     private boolean mRTCStarted = false;
     private boolean DEBUG = false;
+    private FileOutputStream outputStream;
 
     public KMCAgoraVRTCClient(GLRender glRender, Context context) {
         this.mRTCWrapper = new KMCAgoraVRTC(context);
@@ -90,6 +94,11 @@ public class KMCAgoraVRTCClient implements KMCAgoraVRTCCallback, KMCAuthResultLi
         }
 
         setUpPinConnection();
+        try {
+            outputStream = new FileOutputStream("/sdcard/test.raw");
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     private void setUpPinConnection() {
@@ -133,6 +142,13 @@ public class KMCAgoraVRTCClient implements KMCAgoraVRTCCallback, KMCAuthResultLi
             mRTCWrapper.release();
         }
         mRTCWrapper = null;
+        if (outputStream != null) {
+            try {
+                outputStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public SinkPin<ImgBufFrame> getVideoSinkPin() {
@@ -220,6 +236,7 @@ public class KMCAgoraVRTCClient implements KMCAgoraVRTCCallback, KMCAuthResultLi
             if (mRTCWrapper != null && mRTCStarted) {
                 byte[] buf = new byte[frame.buf.remaining()];
                 frame.buf.get(buf);
+
                 mRTCWrapper.sendVideoFrame(buf,
                         frame.format.width,
                         frame.format.height,
@@ -273,6 +290,16 @@ public class KMCAgoraVRTCClient implements KMCAgoraVRTCCallback, KMCAuthResultLi
 
     @Override
     public void onReceiveRemoteVideoFrame(ByteBuffer buffer, VideoFormat format, long pts) {
+        try {
+            Log.e(TAG, "raw buffer width " + format.width + ", height" + format.height);
+            byte[] buf = new byte[buffer.limit()];
+            buffer.rewind();
+            buffer.get(buf);
+            outputStream.write(buf);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         if (mImgTexFormat == null) {
             mImgTexFormat = new ImgTexFormat(ImgTexFormat.COLOR_RGBA, format.width, format.height);
             if (mImgTexSrcPin != null &&
@@ -290,6 +317,7 @@ public class KMCAgoraVRTCClient implements KMCAgoraVRTCCallback, KMCAuthResultLi
 
         if (mImgTexSrcPin.isConnected()) {
             int orientation = 360 - format.orientation;
+            buffer.rewind();
             mImgTexSrcPin.updateFrame(buffer, format.width * 4, format.width, format
                     .height, orientation, pts);
         }
