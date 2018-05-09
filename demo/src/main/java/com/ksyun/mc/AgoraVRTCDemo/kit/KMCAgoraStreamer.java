@@ -126,12 +126,12 @@ public class KMCAgoraStreamer extends KSYStreamer {
         mPresetMainHeight = height;
         mPresetMainMode = mode;
 
+        mImgTexMixer.setScalingMode(mIdxCamera, mode);
+        mImgTexPreviewMixer.setScalingMode(mIdxCamera, mode);
+
         if (isRemoteConnected()) {
             mImgTexMixer.setRenderRect(mIdxCamera, left, top, width, height, 1.0f);
             mImgTexPreviewMixer.setRenderRect(mIdxCamera, left, top, width, height, 1.0f);
-
-            mImgTexMixer.setScalingMode(mIdxCamera, mode);
-            mImgTexPreviewMixer.setScalingMode(mIdxCamera, mode);
         }
     }
 
